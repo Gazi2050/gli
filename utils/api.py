@@ -1,25 +1,27 @@
 import requests
 
-def fetch_github_user(username):
-    """Fetch public profile data for a GitHub user."""
-    url = f"https://api.github.com/users/{username}"
-    try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            return response.json()
-        elif response.status_code == 404:
-            return {"error": f"User '{username}' not found."}
-        else:
-            return {"error": f"Failed to fetch data: {response.status_code}"}
-    except Exception as e:
-        return {"error": str(e)}
+class GitHubAPI:
+    """
+    Client for interacting with the GitHub REST API.
+    
+    Provides methods to fetch public user metadata and handle rate limits or API errors.
+    """
+    
+    BASE_URL = "https://api.github.com/users/"
 
-def fetch_avatar(url):
-    """Fetch avatar image bytes."""
-    try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            return response.content
-        return None
-    except:
-        return None
+    def fetch_user_data(self, username):
+        """
+        Retrieve public profile information for a specified GitHub user.
+
+        Args:
+            username (str): The GitHub username to query.
+
+        Returns:
+            dict: Parsed JSON response from GitHub, or a dict containing an 'error' key.
+        """
+        try:
+            response = requests.get(f"{self.BASE_URL}{username}")
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            return {"error": f"Failed to fetch data for '{username}': {str(e)}"}

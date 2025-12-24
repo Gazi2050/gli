@@ -1,83 +1,88 @@
 import argparse
 import sys
-from utils.api import fetch_github_user, fetch_avatar
-from utils.git_utils import get_github_username, commit_and_push
-from components.ascii_converter import image_to_ascii
-from components.profile_view import display_profile
+from utils.api import GitHubAPI
+from utils.git_utils import GitManager
+from utils.git_utils import GitManager
+from components.profile_view import ProfileView
+from components.help_view import HelpView
 
-def handle_profile(username):
-    """Handle the profile command."""
-    if not username:
-        print("Error: No username provided.")
-        return
-
-    user_data = fetch_github_user(username)
-    if "error" in user_data:
-        print(f"Error: {user_data['error']}")
-        return
-
-    avatar_url = user_data.get("avatar_url")
-    ascii_art = ""
-    if avatar_url:
-        avatar_bytes = fetch_avatar(avatar_url)
-        if avatar_bytes:
-            ascii_art = image_to_ascii(avatar_bytes, width=30)
-
-    display_profile(user_data, ascii_art)
-
-def main():
-    parser = argparse.ArgumentParser(description="gli - A lightweight Git wrapper")
-    subparsers = parser.add_subparsers(dest="command")
-
-    # Profile command
-    profile_parser = subparsers.add_parser("profile", help="Display a GitHub user profile")
-    profile_parser.add_argument("username", nargs="?", help="GitHub username")
-
-    # Me command
-    me_parser = subparsers.add_parser("me", help="Display your own GitHub profile")
-
-    # Commit command
-    commit_parser = subparsers.add_parser("commit", help="Commit and push changes")
-    commit_parser.add_argument("-c", "--commit", help="Commit message")
+class GLIApp:
+    """
+    Main application controller for the gli CLI.
     
-    # Aliases and direct flags
-    args = sys.argv[1:]
-    if not args:
-        parser.print_help()
-        return
-
-    # Handle direct flags like -c or --commit before subparser
-    if args[0] in ["-c", "--commit"]:
-        message = None
-        if len(args) > 1:
-            message = args[1]
-        
-        if not message:
-            print("Error: Commit message required. Usage: gli -c 'message'")
-            return
-        
-        commit_and_push(message)
-        return
+    Coordinates interaction between Git utilities, GitHub API, and terminal UI components.
+    """
     
-    elif args[0] == "me":
-        username = get_github_username()
+    def __init__(self):
+        """Initialize core application services."""
+        self.git = GitManager()
+        self.api = GitHubAPI()
+        self.view = ProfileView()
+        self.help = HelpView()
+
+    def show_profile(self, username=None):
+        """
+        Retrieve and render a GitHub profile dashboard.
+
+        Args:
+            username (str, optional): The GitHub username. Defaults to local config detection.
+        """
+        username = username or self.git.get_github_username()
         if not username:
-            print("Error: Could not detect GitHub username from git config.")
+            print("Error: Username could not be detected or provided.")
             return
-        handle_profile(username)
-        return
-    
-    parsed_args = parser.parse_args()
 
-    if parsed_args.command == "profile":
-        handle_profile(parsed_args.username)
-    elif parsed_args.command == "commit":
-        if parsed_args.commit:
-            commit_and_push(parsed_args.commit)
+        user_data = self.api.fetch_user_data(username)
+        if "error" in user_data:
+            print(user_data["error"])
+            return
+
+        self.view.render(user_data)
+
+    def run(self):
+        """
+        Execute the application based on command-line arguments.
+        
+        Parses flags and subcommands to dispatch tasks to appropriate service methods.
+        """
+        parser = argparse.ArgumentParser(description="gli - Modern Git Wrapper")
+        
+        parser.add_argument("-c", "--commit", help="Commit and push: gli -c 'msg'")
+        parser.add_argument("-l", "--log", action="store_true", help="View git log")
+        parser.add_argument("-rl", "--reflog", action="store_true", help="View git reflog")
+        parser.add_argument("-rs", "--reset", choices=["soft", "hard"], help="Reset last commit")
+        parser.add_argument("-s", "--switch", metavar="BRANCH", help="Create and switch branch")
+        parser.add_argument("-ct", "--changeTime", nargs="?", const="", metavar="DATE", help="Change commit time")
+        parser.add_argument("-ca", "--changeAuthor", action="store_true", help="Change commit author")
+        parser.add_argument("-cm", "--changeMessage", action="store_true", help="Change commit message")
+        
+        parser.add_argument("command", nargs="?", choices=["profile", "me"], help="Command to run")
+        parser.add_argument("username", nargs="?", help="GitHub username for profile")
+
+        args = parser.parse_args()
+
+        if args.commit:
+            self.git.commit_and_push(args.commit)
+        elif args.log:
+            self.git.show_log()
+        elif args.reflog:
+            self.git.show_reflog()
+        elif args.reset:
+            self.git.reset_commit(args.reset)
+        elif args.switch:
+            self.git.switch_branch(args.switch)
+        elif args.changeTime is not None:
+            self.git.change_commit_time(args.changeTime if args.changeTime != "" else None)
+        elif args.changeAuthor:
+            self.git.change_commit_author()
+        elif args.changeMessage:
+            self.git.change_commit_message()
+        elif args.command == "profile":
+            self.show_profile(args.username)
+        elif args.command == "me":
+            self.show_profile()
         else:
-            print("Error: Commit message required.")
-    else:
-        parser.print_help()
+            self.help.render()
 
 if __name__ == "__main__":
-    main()
+    GLIApp().run()

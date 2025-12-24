@@ -1,38 +1,53 @@
 from rich.console import Console
-from rich.layout import Layout
 from rich.panel import Panel
 from rich.table import Table
+from rich.layout import Layout
 from rich import box
-from rich.text import Text
 
-def display_profile(user_data, ascii_art):
-    """Display GitHub profile in a modern, neofetch-style layout."""
-    console = Console()
+class ProfileView:
+    """
+    View component for rendering the simplified GitHub profile dashboard.
+    """
     
-    if "error" in user_data:
-        console.print(f"[bold red]Error:[/] {user_data['error']}")
-        return
+    def __init__(self):
+        """Initialize the view with a Rich console."""
+        self.console = Console()
 
-    # Create the info table
-    info_table = Table(show_header=False, box=None, padding=(0, 1))
-    info_table.add_column("Key", style="bold cyan")
-    info_table.add_column("Value", style="white")
-    
-    info_table.add_row("Name", user_data.get("name") or "N/A")
-    info_table.add_row("Username", f"@{user_data.get('login')}")
-    info_table.add_row("Bio", user_data.get("bio") or "No bio provided.")
-    info_table.add_row("Location", user_data.get("location") or "Unknown")
-    info_table.add_row("Company", user_data.get("company") or "N/A")
-    info_table.add_row("Blog", user_data.get("blog") or "N/A")
-    info_table.add_row("Followers", str(user_data.get("followers")))
-    info_table.add_row("Following", str(user_data.get("following")))
-    info_table.add_row("Public Repos", str(user_data.get("public_repos")))
-    
-    # Layout with ASCII and Info
-    layout = Layout()
-    layout.split_row(
-        Layout(Panel(Text(ascii_art, style="green"), box=box.ROUNDED, title="Avatar", border_style="dim"), ratio=1),
-        Layout(Panel(info_table, box=box.ROUNDED, title=f"GitHub Profile: {user_data.get('login')}", border_style="cyan"), ratio=2)
-    )
-    
-    console.print(layout)
+    def render(self, user_data):
+        """
+        Render the user data into a high-density terminal dashboard.
+
+        Args:
+            user_data (dict): The public profile data fetched from the GitHub API.
+        """
+        # Header Panel
+        header = Panel(
+            f"[bold cyan]{user_data.get('name', 'N/A')}[/] (@{user_data.get('login', 'N/A')})\n"
+            f"[italic white]{user_data.get('bio', 'No bio available.')}[/]",
+            title="GitHub Profile", border_style="cyan", box=box.ROUNDED
+        )
+
+        # Activity & Account Tables
+        stats_table = Table(show_header=False, box=box.SIMPLE, padding=(0, 2))
+        stats_table.add_row("[bold green]Followers[/]", str(user_data.get('followers', 0)))
+        stats_table.add_row("[bold green]Following[/]", str(user_data.get('following', 0)))
+        stats_table.add_row("[bold green]Repositories[/]", str(user_data.get('public_repos', 0)))
+        stats_table.add_row("[bold green]Gists[/]", str(user_data.get('public_gists', 0)))
+
+        account_table = Table(show_header=False, box=box.SIMPLE, padding=(0, 2))
+        account_table.add_row("[bold yellow]Location[/]", user_data.get('location', 'Unknown'))
+        account_table.add_row("[bold yellow]Company[/]", user_data.get('company', 'None'))
+        account_table.add_row("[bold yellow]Blog[/]", user_data.get('blog', 'None'))
+        account_table.add_row("[bold yellow]Created[/]", user_data.get('created_at', 'N/A')[:10])
+
+        # Composite Layout
+        main_table = Table.grid(expand=True)
+        main_table.add_column(ratio=1)
+        main_table.add_column(ratio=1)
+        main_table.add_row(
+            Panel(stats_table, title="Statistics", border_style="green", box=box.ROUNDED),
+            Panel(account_table, title="Account Details", border_style="yellow", box=box.ROUNDED)
+        )
+
+        self.console.print(header)
+        self.console.print(main_table)

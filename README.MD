@@ -6,6 +6,34 @@ A lightweight Git wrapper that simplifies common Git commands into short, intuit
 
 Designed to save developers time, reduce errors, and streamline Git workflows with minimal command memorization.
 
+## **Getting Started**
+
+---
+
+### **1. Clone the repository**
+```bash
+git clone https://github.com/Gazi2050/gli.git
+cd gli
+```
+
+### **2. Install Dependencies**
+`gli` uses `rich` for UI and `requests` for GitHub API interactions.
+```bash
+pip3 install rich requests
+```
+
+### **3. Run locally**
+```bash
+python3 app.py
+```
+
+### **4. (Optional) Create an alias**
+To use `gli` directly from anywhere:
+```bash
+# Add this to your .bashrc or .zshrc
+alias gli='python3 /absolute/path/to/gli/app.py'
+```
+
 ## **Features**
 
 ---
@@ -70,13 +98,13 @@ gli --switch <branch_name>
 
 ---
 
-### **Feature 06: GitHub Profile (ASCII View)**
+### **Feature 06: GitHub Profile (Simplified Dashboard)**
 
-Display a GitHub user’s public profile in a neofetch-style layout, including an ASCII-rendered avatar and key public information such as name, username, bio, repositories, followers, and location.
+Display a GitHub user’s public profile in a high-density, neofetch-style dashboard. This view includes key public information such as name, username, bio, account statistics (followers, following, repos), and detailed account metadata.
 
 - Fetches data from the GitHub **public API**
-- Converts the user’s avatar image into **ASCII art**
-- Displays everything in a clean, terminal-friendly UI
+- Displays a clean, categorized, and terminal-friendly dashboard UI
+- Optimized for quick data retrieval and visual clarity
 
 ```bash
 gli me

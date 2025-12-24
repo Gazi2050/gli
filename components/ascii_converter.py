@@ -1,25 +1,52 @@
 from PIL import Image
-import io
 
-def image_to_ascii(image_bytes, width=40):
-    """Convert an image to ASCII art."""
-    if not image_bytes:
-        return ""
+class ASCIIConverter:
+    """
+    Utility for converting image data into terminal-ready ASCII art.
+    """
     
-    try:
-        img = Image.open(io.BytesIO(image_bytes))
-        # Maintain aspect ratio
-        aspect_ratio = img.height / img.width
-        height = int(width * aspect_ratio * 0.5) # 0.5 because characters are taller than wide
-        img = img.resize((width, height)).convert("L") # L mode is for grayscale
-        
-        chars = "@%#*+=-:. "
-        pixels = img.getdata()
-        ascii_str = ""
-        for i, pixel in enumerate(pixels):
-            ascii_str += chars[pixel // 26] # 256 / 10 roughly 25.6
-            if (i + 1) % width == 0:
-                ascii_str += "\n"
-        return ascii_str
-    except Exception as e:
-        return f"Error converting image: {e}"
+    ASCII_CHARS = ["@", "#", "S", "%", "?", "*", "+", ";", ":", ",", "."]
+
+    def _resize_image(self, image, new_width=100):
+        """Internal helper to scale images while maintaining aspect ratio."""
+        width, height = image.size
+        ratio = height / width / 1.65
+        new_height = int(new_width * ratio)
+        return image.resize((new_width, new_height))
+
+    def _grayify(self, image):
+        """Convert an RGB image to grayscale."""
+        return image.convert("L")
+
+    def _pixels_to_ascii(self, image):
+        """Map grayscale pixel values to ASCII characters."""
+        pixels = list(image.getdata())
+        characters = "".join([self.ASCII_CHARS[pixel // 25] for pixel in pixels])
+        return characters
+
+    def convert(self, image_url, width=100):
+        """
+        Download and convert an image URL into a multi-line ASCII string.
+
+        Args:
+            image_url (str): The URL of the image to process.
+            width (int, optional): The target width of the ASCII output. Defaults to 100.
+
+        Returns:
+            str: The formatted ASCII art string.
+        """
+        import requests
+        from io import BytesIO
+
+        try:
+            response = requests.get(image_url)
+            img = Image.open(BytesIO(response.content))
+            
+            img = self._resize_image(img, width)
+            img = self._grayify(img)
+            
+            ascii_str = self._pixels_to_ascii(img)
+            pixel_count = len(ascii_str)
+            return "\n".join([ascii_str[index : (index + width)] for index in range(0, pixel_count, width)])
+        except Exception as e:
+            return f"Error converting image: {e}"
