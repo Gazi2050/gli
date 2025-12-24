@@ -14,11 +14,11 @@ A lightweight Git wrapper simplifying complex workflows into intuitive terminal 
 
 Download the standalone binary for your OS from the [Latest Release](https://github.com/Gazi2050/gli/releases).
 
-| Platform | One-Line Install Command |
-| :--- | :--- |
-| **🐧 Linux** | `sudo mv gli /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli` |
-| **🍎 macOS** | `sudo mv gli-mac /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli` |
-| **🪟 Windows** | Move `gli.exe` to a folder in your **System PATH** |
+| Platform | One-Line Install Command | 🗑️ Uninstall |
+| :--- | :--- | :--- |
+| **🐧 Linux** | `sudo mv gli /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli` | `sudo rm /usr/local/bin/gli` |
+| **🍎 macOS** | `sudo mv gli-mac /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli` | `sudo rm /usr/local/bin/gli` |
+| **🪟 Windows** | `move gli.exe C:\Windows\System32\` (CMD Admin) | `del C:\Windows\System32\gli.exe` |
 
 #### **🔄 Updating**
 To update, just download the new binary and run the install command again to overwrite the old one.

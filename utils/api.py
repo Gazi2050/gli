@@ -25,3 +25,21 @@ class GitHubAPI:
             return response.json()
         except requests.exceptions.RequestException as e:
             return {"error": f"Failed to fetch data for '{username}': {str(e)}"}
+
+    def fetch_user_repos(self, username):
+        """
+        Retrieve public repositories for a specified GitHub user, sorted by last update.
+
+        Args:
+            username (str): The GitHub username to query.
+
+        Returns:
+            list: A list of repository dictionaries, or an empty list if an error occurs.
+        """
+        try:
+            params = {"sort": "updated", "per_page": 5}
+            response = requests.get(f"{self.BASE_URL}{username}/repos", params=params)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException:
+            return []
