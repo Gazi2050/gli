@@ -14,7 +14,10 @@ A lightweight Git wrapper simplifying complex workflows into intuitive terminal 
 
 **1. Setup Environment**
 ```bash
-git clone https://github.com/Gazi2050/gli.git && cd gli
+git clone https://github.com/Gazi2050/gli.git
+
+cd gli
+
 pip3 install rich requests
 ```
 **2. Usage**
@@ -26,7 +29,7 @@ gli --help
 
 | Feature | Commands | Quick Link |
 | :--- | :--- | :--- |
-| **Commit** | `-c <msg>` | Stage, commit, & Push. |
+| **Commit** | `-c <msg>`, `--commit` | [View Usage](#-commit--push) |
 | **History** | `-l`, `--log` | [View Usage](#-history-log) |
 | **Recovery** | `-rl`, `--reflog` | [View Usage](#-recovery-reflog) |
 | **Reset** | `-rs`, `--reset` | [View Usage](#-reset-commit) |
