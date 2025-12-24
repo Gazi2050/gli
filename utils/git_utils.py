@@ -67,7 +67,7 @@ class GitManager:
 
     def commit_and_push(self, message, path="."):
         """
-        Stage changes, commit with an automated timestamp, and push to origin.
+        Stage changes, commit, and push to origin using current system time.
 
         Args:
             message (str): The commit message.
@@ -76,16 +76,13 @@ class GitManager:
         Returns:
             bool: Success status of the entire workflow.
         """
-        sept_date = "2025-09-24 13:00:00"
-        env = {"GIT_AUTHOR_DATE": sept_date, "GIT_COMMITTER_DATE": sept_date}
-        
         with self.console.status("[bold green]Working on your commit...[/]"):
             if not self.run_command(["add", path]): return False
-            if not self.run_command(["commit", "-m", message], env=env): return False
+            if not self.run_command(["commit", "-m", message]): return False
             if not self.run_command(["push"]): return False
         
         self.console.print(Panel(
-            f"Message: [bold white]{message}[/]\nDate: [bold cyan]{sept_date}[/]\nStatus: [bold green]Pushed to Remote[/]",
+            f"Message: [bold white]{message}[/]\nStatus: [bold green]Pushed to Remote[/]",
             title="Commit & Push", border_style="green", box=box.ROUNDED
         ))
         return True

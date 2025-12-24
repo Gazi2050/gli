@@ -20,14 +20,12 @@ class ProfileView:
         Args:
             user_data (dict): The public profile data fetched from the GitHub API.
         """
-        # Header Panel
         header = Panel(
             f"[bold cyan]{user_data.get('name', 'N/A')}[/] (@{user_data.get('login', 'N/A')})\n"
             f"[italic white]{user_data.get('bio', 'No bio available.')}[/]",
             title="GitHub Profile", border_style="cyan", box=box.ROUNDED
         )
 
-        # Activity & Account Tables
         stats_table = Table(show_header=False, box=box.SIMPLE, padding=(0, 2))
         stats_table.add_row("[bold green]Followers[/]", str(user_data.get('followers', 0)))
         stats_table.add_row("[bold green]Following[/]", str(user_data.get('following', 0)))
@@ -40,7 +38,6 @@ class ProfileView:
         account_table.add_row("[bold yellow]Blog[/]", user_data.get('blog', 'None'))
         account_table.add_row("[bold yellow]Created[/]", user_data.get('created_at', 'N/A')[:10])
 
-        # Composite Layout
         main_table = Table.grid(expand=True)
         main_table.add_column(ratio=1)
         main_table.add_column(ratio=1)
