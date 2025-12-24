@@ -16,8 +16,8 @@ Download the standalone binary for your OS from the [Latest Release](https://git
 
 | Platform | One-Line Install Command |
 | :--- | :--- |
-| **🐧 Linux** | `sudo mv gli /usr/local/bin/gli` |
-| **🍎 macOS** | `sudo mv gli-mac /usr/local/bin/gli` |
+| **🐧 Linux** | `sudo mv gli /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli` |
+| **🍎 macOS** | `sudo mv gli-mac /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli` |
 | **🪟 Windows** | Move `gli.exe` to a folder in your **System PATH** |
 
 #### **🔄 Updating**
