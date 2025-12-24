@@ -79,7 +79,7 @@ jobs:
     - name: Inject Version Tag
       shell: bash
       run: |
-        sed -i 's/\[\[STAMP\]\]/${{ needs.release.outputs.new_tag }}/g' app.py
+        python -c "import sys; p='app.py'; c=open(p).read().replace('[[STAMP]]', sys.argv[1]); open(p, 'w').write(c)" ${{ needs.release.outputs.new_tag }}
 
     - name: Install dependencies
       run: |
