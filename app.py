@@ -44,7 +44,7 @@ class GLIApp:
         Parses flags and subcommands to dispatch tasks to appropriate service methods.
         """
         VERSION = "[[STAMP]]"
-        if VERSION == "[[STAMP]]":
+        if VERSION.startswith("[[") and VERSION.endswith("]]"):
             VERSION = "dev-local"
             
         parser = argparse.ArgumentParser(description="gli - Modern Git Wrapper")
