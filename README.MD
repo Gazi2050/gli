@@ -1,5 +1,4 @@
 # gli
-
 ```text
   ________  ___       ___     
  /  _____/ /  /      /__/     
@@ -7,45 +6,35 @@
 \  \__\  /  /____   /  /      
  \______/ /______/ /__/       
 ```
-
 > **a git wrapper to make developer life easy**
 
-A lightweight Git wrapper that simplifies complex workflows into intuitive, high-density terminal commands. Designed for speed, precision, and visual clarity.
+A lightweight Git wrapper simplifying complex workflows into intuitive terminal commands.
 
----
+### **🚀 Getting Started**
 
-## **🚀 Quick Start**
-
-### **1. Clone & Enter**
+**1. Setup Environment**
 ```bash
-git clone https://github.com/Gazi2050/gli.git
-cd gli
-```
-
-### **2. Install Dependencies**
-```bash
+git clone https://github.com/Gazi2050/gli.git && cd gli
 pip3 install rich requests
 ```
 
-### **3. Run**
+**2. Usage**
 ```bash
 python3 app.py
 ```
 
----
+### **💎 Features**
 
-## **💎 Core Features**
-
-| Feature | command | Description |
+| Feature | Commands | Logic |
 | :--- | :--- | :--- |
-| **Commit & Push** | `-c`, `--commit` | Auto-stage, September-timestamp, and push. |
-| **History** | `-l`, `--log` | High-density commit history with time. |
-| **Recovery** | `-rl`, `--reflog` | Clarified Reflog with numeric selectors. |
-| **Reset** | `-rs <mode>`, `--reset <mode>` | Reset to previous commit. Modes: `soft` (keeps changes) or `hard` (discards). |
-| **Branch** | `-s <name>`, `--switch <name>` | Create, switch, and track new branch. |
-| **Profile** | `me` \| `profile <user>` | GitHub dashboard (Stats, Meta, Bio). |
-| **Time Warp** | `-ct [<date>]`, `--changeTime` | Target specific/all/last commit timestamps. |
-| **Identity** | `-ca`, `--changeAuthor` | Target specific/all/last author details. |
-| **Rewrite** | `-cm`, `--changeMessage` | Update last commit message instantly. |
+| **Commit** | `-c`, `--commit` | Stage, September-timestamp, & Push. |
+| **History** | `-l`, `--log` | High-density log with full time. |
+| **Recovery** | `-rl`, `--reflog` | Reflog with numeric HEAD indices. |
+| **Reset** | `-rs`, `--reset` | `soft` (keep) or `hard` (discard) reset. |
+| **Branch** | `-s`, `--switch` | Create, switch, and track origin. |
+| **Profile** | `me`, `profile <u|?>` | GitHub dashboard (Stats, Meta, Bio). |
+| **Time Warp**| `-ct`, `--changeTime`| Precise timestamp rewriting. |
+| **Identity** | `-ca`, `--changeAuthor`| Author detail modification. |
+| **Rewrite**  | `-cm`, `--changeMessage`| Instant message updates. |
 
 <p align="center">Made with ❤️ for Git users</p>
