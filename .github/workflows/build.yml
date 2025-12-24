@@ -85,16 +85,18 @@ jobs:
       if: runner.os != 'Windows'
       run: |
         pyinstaller --onefile --name gli --clean app.py
+        mv dist/gli dist/gli-${{ runner.os }}
 
     - name: Build Binary (Windows)
       if: runner.os == 'Windows'
       run: |
-        pyinstaller --onefile --name gli.exe --clean app.py
+        pyinstaller --onefile --name gli --clean app.py
+        mv dist/gli.exe dist/gli-Windows.exe
 
     - name: Upload to Release
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ needs.release.outputs.new_tag }}
-        files: dist/gli*
+        files: dist/gli-*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
