@@ -3,6 +3,8 @@ name: Build Binaries
 on:
   push:
     branches: [ "main" ]
+  release:
+    types: [created]
   workflow_dispatch:
 
 jobs:
@@ -26,12 +28,26 @@ jobs:
         python -m pip install --upgrade pip
         pip install rich requests pyinstaller
 
-    - name: Build Binary
+    - name: Build Binary (Linux/Mac)
+      if: runner.os != 'Windows'
       run: |
         pyinstaller --onefile --name gli --clean app.py
 
-    - name: Upload Artifact
+    - name: Build Binary (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        pyinstaller --onefile --name gli.exe --clean app.py
+
+    - name: Upload Artifact (Action Tab)
       uses: actions/upload-artifact@v4
       with:
         name: gli-${{ matrix.os }}
         path: dist/gli*
+
+    - name: Upload to Release
+      if: github.event_name == 'release'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/gli*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
