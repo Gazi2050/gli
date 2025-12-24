@@ -2,7 +2,6 @@ import argparse
 import sys
 from utils.api import GitHubAPI
 from utils.git_utils import GitManager
-from utils.git_utils import GitManager
 from components.profile_view import ProfileView
 from components.help_view import HelpView
 
