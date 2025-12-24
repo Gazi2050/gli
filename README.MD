@@ -12,21 +12,19 @@ A lightweight Git wrapper simplifying complex workflows into intuitive terminal 
 
 ### **📥 Installation**
 
-Download the binary for your OS from the [Latest Release](https://github.com/Gazi2050/gli/releases).
+Download the standalone binary for your OS from the [Latest Release](https://github.com/Gazi2050/gli/releases).
 
-#### **🐧 Linux / 🍎 macOS**
-Move it to your system folder to use `gli` from any directory:
+| Platform | One-Line Install Command |
+| :--- | :--- |
+| **🐧 Linux** | `sudo mv gli /usr/local/bin/gli` |
+| **🍎 macOS** | `sudo mv gli-mac /usr/local/bin/gli` |
+| **🪟 Windows** | Move `gli.exe` to a folder in your **System PATH** |
+
 #### **🔄 Updating**
-To update to the latest version, just download the new binary and run the move command again to overwrite the old one:
+To update, just download the new binary and run the install command again to overwrite the old one.
 ```bash
-sudo mv gli-Linux /usr/local/bin/gli
+gli --version  # Verify your version
 ```
-Check your current version anytime with `gli --version`.
-
-#### **🪟 Windows**
-1.  Download `gli-Windows.exe`.
-2.  Optional: Rename it to `gli.exe`.
-3.  **Pro Tip:** Add the folder to your **System PATH** to use it in any terminal (CMD, PowerShell).
 
 ### **🚀 Usage**
 ```bash
