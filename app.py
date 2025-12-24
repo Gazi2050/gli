@@ -43,8 +43,13 @@ class GLIApp:
         
         Parses flags and subcommands to dispatch tasks to appropriate service methods.
         """
+        VERSION = "[[STAMP]]"
+        if VERSION == "[[STAMP]]":
+            VERSION = "dev-local"
+            
         parser = argparse.ArgumentParser(description="gli - Modern Git Wrapper")
         
+        parser.add_argument("-v", "--version", action="version", version=f"%(prog)s {VERSION}")
         parser.add_argument("-c", "--commit", help="Commit and push: gli -c 'msg'")
         parser.add_argument("-l", "--log", action="store_true", help="View git log")
         parser.add_argument("-rl", "--reflog", action="store_true", help="View git reflog")
