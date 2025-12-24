@@ -1,5 +1,4 @@
 import argparse
-import sys
 from utils.api import GitHubAPI
 from utils.git_utils import GitManager
 from components.profile_view import ProfileView

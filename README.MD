@@ -29,12 +29,12 @@ gli --help
 
 | Feature | Commands | Quick Link |
 | :--- | :--- | :--- |
-| **Commit** | `-c <msg>`, `--commit` | [View Usage](#-commit--push) |
+| **Commit** | `-c`, `--commit` | [View Usage](#-commit--push) |
 | **History** | `-l`, `--log` | [View Usage](#-history-log) |
 | **Recovery** | `-rl`, `--reflog` | [View Usage](#-recovery-reflog) |
 | **Reset** | `-rs`, `--reset` | [View Usage](#-reset-commit) |
 | **Branch** | `-s`, `--switch` | [View Usage](#-branch-management) |
-| **Profile** | `me` \| `profile` | [View Usage](#-github-profile) |
+| **Profile** | `me`, `profile` | [View Usage](#-github-profile) |
 | **Time Warp**| `-ct`, `--changeTime`| [View Usage](#-time-warp) |
 | **Identity** | `-ca`, `--changeAuthor`| [View Usage](#-identity-swap) |
 | **Rewrite**  | `-cm`, `--changeMessage`| [View Usage](#-message-rewrite) |
@@ -88,10 +88,13 @@ gli profile gazi2050
 ```
 
 #### **⏳ Time Warp**
-Interactively or directly updates the timestamp of your commits. Supports modifying the **Last**, **Specific**, or **All** commits in history.
+Interactively updates the timestamp of your commits. Supports modifying the **Last**, **Specific**, or **All** commits in history.
 ```bash
-gli -ct "2025-09-24 13:00"
-gli --changeTime "2025-09-24 13:00"
+# Shorthand
+gli -ct
+
+# Full-hand
+gli --changeTime
 ```
 
 #### **🆔 Identity Swap**
