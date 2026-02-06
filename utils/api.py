@@ -1,4 +1,5 @@
 import requests
+import base64
 
 class GitHubAPI:
     """
@@ -43,3 +44,68 @@ class GitHubAPI:
             return response.json()
         except requests.exceptions.RequestException:
             return []
+
+    def _get_api_url(self):
+        """
+        Decode and return the Base64 encoded AI commit API endpoint.
+        
+        Returns:
+            str: The decoded API URL.
+        """
+        # Encrypted URL: https://diny-cli.vercel.app/api/v2/commit
+        encoded_url = "aHR0cHM6Ly9kaW55LWNsaS52ZXJjZWwuYXBwL2FwaS92Mi9jb21taXQ="
+        return base64.b64decode(encoded_url).decode('utf-8')
+
+    def generate_ai_commit(self, git_diff, username, repo_name):
+        """
+        Send a git diff to the AI backend to generate a meaningful commit message.
+
+        Args:
+            git_diff (str): The staged changes (git diff --staged).
+            username (str): The local git username for identification.
+            repo_name (str): The repository name for identification.
+
+        Returns:
+            str: The generated commit message, or None if the request fails.
+        """
+        url = self._get_api_url()
+        payload = {
+            "gitDiff": git_diff,
+            "version": "v1.0.0",
+            "name": username,
+            "repoName": repo_name,
+            "system": "linux",
+            "config": {
+                "Theme": "catppuccin",
+                "Commit": {
+                    "Conventional": True,
+                    "ConventionalFormat": ["feat", "fix", "docs", "chore", "style", "refactor", "test", "perf"],
+                    "Emoji": False,
+                    "EmojiMap": {
+                        "feat": "🚀",
+                        "fix": "🐛",
+                        "docs": "📚",
+                        "style": "🎨",
+                        "refactor": "♻️",
+                        "test": "✅",
+                        "chore": "🔧",
+                        "perf": "⚡"
+                    },
+                    "Tone": "casual",
+                    "Length": "short",
+                    "CustomInstructions": "",
+                    "HashAfterCommit": False
+                }
+            }
+        }
+
+        try:
+            response = requests.post(url, json=payload, timeout=30)
+            response.raise_for_status()
+            data = response.json()
+            
+            if "data" in data and "commitMessage" in data["data"]:
+                return data["data"]["commitMessage"]
+            return None
+        except requests.exceptions.RequestException:
+            return None

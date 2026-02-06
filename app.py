@@ -58,6 +58,7 @@ class GLIApp:
         parser.add_argument("-ct", "--changeTime", nargs="?", const="", metavar="DATE", help="Change commit time")
         parser.add_argument("-ca", "--changeAuthor", action="store_true", help="Change commit author")
         parser.add_argument("-cm", "--changeMessage", action="store_true", help="Change commit message")
+        parser.add_argument("-ac", "--ai-commit", action="store_true", help="Generate message using AI and commit")
         
         parser.add_argument("command", nargs="?", choices=["profile", "me"], help="Command to run")
         parser.add_argument("username", nargs="?", help="GitHub username for profile")
@@ -66,6 +67,8 @@ class GLIApp:
 
         if args.commit:
             self.git.commit_and_push(args.commit)
+        elif args.ai_commit:
+            self.handle_ai_commit()
         elif args.log:
             self.git.show_log()
         elif args.reflog:
@@ -86,6 +89,32 @@ class GLIApp:
             self.show_profile()
         else:
             self.help.render()
+
+    def handle_ai_commit(self):
+        """
+        Stage all changes, generate a commit message using AI, and push.
+        """
+        with self.git.console.status("[bold cyan]Preparing AI-powered commit...[/]"):
+            # Stage all changes first, just like the -c flag does
+            if not self.git.run_command(["add", "."]):
+                return
+
+            diff = self.git.get_staged_diff()
+            if not diff:
+                self.git.console.print("[bold yellow]⚠ Info:[/] No changes detected in the repository.")
+                return
+
+            username = self.git.get_github_username() or "unknown-user"
+            repo_name = self.git.get_repo_name()
+            
+            message = self.api.generate_ai_commit(diff, username, repo_name)
+            
+            if not message:
+                self.git.console.print("[bold red]✗ Error:[/] Failed to generate message from AI.")
+                return
+
+        # Use the generated message with existing commit logic (will stage again, which is safe)
+        self.git.commit_and_push(message)
 
 if __name__ == "__main__":
     GLIApp().run()

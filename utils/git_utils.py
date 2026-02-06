@@ -41,6 +41,36 @@ class GitManager:
         """
         return self.get_config("github.user") or self.get_config("user.name")
 
+    def get_repo_name(self):
+        """
+        Extract the repository name from the remote origin URL.
+
+        Returns:
+            str: The repository name (e.g., 'gli'), or 'unknown-repo' if not detectable.
+        """
+        url = self.get_config("remote.origin.url")
+        if not url:
+            return "unknown-repo"
+        
+        # Handle SSH (git@github.com:user/repo.git) and HTTPS (https://github.com/user/repo.git)
+        repo_name = url.split("/")[-1]
+        if repo_name.endswith(".git"):
+            repo_name = repo_name[:-4]
+        return repo_name
+
+    def get_staged_diff(self):
+        """
+        Retrieve the diff of staged changes.
+
+        Returns:
+            str: The git diff output for staged changes, or None if no changes or error.
+        """
+        try:
+            diff = subprocess.check_output(["git", "diff", "--staged"]).decode("utf-8").strip()
+            return diff if diff else None
+        except subprocess.CalledProcessError:
+            return None
+
     def run_command(self, args, env=None):
         """
         Execute a Git command with optional environment variable overrides.

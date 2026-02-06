@@ -41,6 +41,7 @@ class HelpView:
 
         commands = [
             ("Commit & Push", "-c, --commit", "Stage all, commit with msg, and push"),
+            ("AI Commit", "-ac, --ai-commit", "Generate AI message and push"),
             ("Log", "-l, --log", "View commit history graph"),
             ("Reflog", "-rl, --reflog", "View git reflog"),
             ("Reset", "-rs, --reset", "Reset last commit (soft/hard)"),
@@ -56,4 +57,4 @@ class HelpView:
             table.add_row(cmd, flag, desc)
 
         self.console.print(table)
-        self.console.print("\n[dim]Usage example: [bold cyan]gli -c 'feat: new feature'[/][/]")
+        self.console.print("\n[dim]Usage example: [bold cyan]gli -c 'feat: msg'[/] or [bold cyan]gli -ac[/][/]")
