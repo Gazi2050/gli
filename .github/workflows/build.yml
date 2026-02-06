@@ -4,7 +4,6 @@ on:
   push:
     branches: [ "main" ]
 
-  # Allow manual run, but jobs will only execute on main
   workflow_dispatch:
 
 permissions:
@@ -12,7 +11,6 @@ permissions:
 
 jobs:
   release:
-    # 🔒 Lock this job to main branch only
     if: github.ref == 'refs/heads/main'
 
     name: Generate Version & Create Release
@@ -29,7 +27,6 @@ jobs:
       - name: Calculate Next Version
         id: versioning
         run: |
-          # Get the latest tag, default to v0.0.0 if none exists
           LATEST_TAG=$(git tag --sort=-v:refname | head -n 1)
 
           if [ -z "$LATEST_TAG" ]; then
@@ -38,11 +35,9 @@ jobs:
           
           echo "Latest tag: $LATEST_TAG"
 
-          # Strip 'v' and split into components
           VERSION=${LATEST_TAG#v}
           IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
 
-          # Increment logic: 0.0.9 -> 0.1.0
           PATCH=$((PATCH + 1))
 
           if [ $PATCH -gt 9 ]; then
@@ -74,7 +69,6 @@ jobs:
 
 
   build:
-    # 🔒 Lock this job to main branch only
     if: github.ref == 'refs/heads/main'
 
     name: Build on ${{ matrix.os }}
@@ -104,39 +98,26 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install rich requests pyinstaller
+          pip install "rich<14.0.0" requests pyinstaller
 
 
       - name: Build Binary (Linux)
         if: runner.os == 'Linux'
-        shell: bash
         run: |
-          pyinstaller --onefile --name gli --clean \
-          --exclude-module _tkinter \
-          --exclude-module tkinter \
-          --exclude-module tcl \
-          --collect-data rich \
-          app.py
-          strip dist/gli
+          pyinstaller --onefile --name gli --clean app.py
 
 
       - name: Build Binary (macOS)
         if: runner.os == 'macOS'
-        shell: bash
         run: |
-          pyinstaller --onefile --name gli --clean \
-          --collect-data rich \
-          app.py
+          pyinstaller --onefile --name gli --clean app.py
           mv dist/gli dist/gli-mac
 
 
       - name: Build Binary (Windows)
         if: runner.os == 'Windows'
-        shell: bash
         run: |
-          pyinstaller --onefile --name gli --clean \
-          --collect-data rich \
-          app.py
+          pyinstaller --onefile --name gli --clean app.py
 
 
       - name: Upload to Release
