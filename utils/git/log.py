@@ -6,7 +6,6 @@ class GitLog:
     """
     Visualization tools for Git history: log and reflog.
     """
-    # This class expects console to be available.
 
     def show_log(self, count: int = 10):
         """

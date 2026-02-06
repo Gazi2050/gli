@@ -7,8 +7,6 @@ class GitActions:
     """
     Primary Git workflows: commit, push, branch management, and reset.
     """
-    # This class expects run_command, get_current_branch, and console to be available 
-    # (via GitCore mixin).
 
     def commit_and_push(self, message: str, path: str = ".", no_verify: bool = False) -> bool:
         """

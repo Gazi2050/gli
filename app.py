@@ -50,7 +50,6 @@ class GLIApp:
 
         args = parser.parse_args()
 
-        # Routing Logic
         if args.commit is not None:
             if args.commit == "prompt":
                 self.commit_ctrl.handle_manual_commit(no_verify=args.no_verify)

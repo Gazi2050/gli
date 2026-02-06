@@ -6,7 +6,6 @@ class GitHistory:
     """
     Advanced Git history manipulation: time, author, and message rewriting.
     """
-    # This class expects run_command, console, and _get_modification_scope to be available.
 
     def _get_modification_scope(self, title: str) -> str:
         """
