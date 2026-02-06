@@ -124,12 +124,10 @@ class GLIApp:
 
         username = self.git.get_github_username() or "unknown-user"
         repo_name = self.git.get_repo_name()
-        
-        custom_instructions = ""
 
         while True:
             with self.git.console.status("[bold cyan]Analyzing changes with AI...[/]"):
-                message = self.api.generate_ai_commit(diff, username, repo_name, custom_instructions)
+                message = self.api.generate_ai_commit(diff, username, repo_name)
                 
             if not message:
                 self.git.console.print("[bold red]✗ Error:[/] Failed to generate message from AI.")
@@ -145,28 +143,29 @@ class GLIApp:
             # Prompt for action
             self.git.console.print(f"\n[bold cyan][1][/] [white]Commit & Push[/]")
             self.git.console.print(f"[bold yellow][2][/] [white]Regenerate[/]")
-            self.git.console.print(f"[bold magenta][4][/] [white]Refine with prompt[/]")
-            self.git.console.print(f"[bold blue][5][/] [white]Edit message manually[/]")
-            self.git.console.print(f"[bold red][3][/] [white]Cancel[/]")
+            self.git.console.print(f"[bold blue][3][/] [white]Edit message manually[/]")
+            self.git.console.print(f"[bold red][4][/] [white]Cancel[/]")
             
-            choice = self.git.console.input("\n[bold white]Select action (1/2/3/4/5): [/]").strip()
+            choice = self.git.console.input("\n[bold white]Select action (1/2/3/4): [/]").strip()
 
             if choice == "1":
                 self.git.commit_and_push(message)
                 break
             elif choice == "2":
-                custom_instructions = "" # Reset instructions for a clean regeneration
                 continue 
-            elif choice == "4":
-                refinement = self.git.console.input("\n[bold magenta]Enter refinement instructions (e.g. 'be more technical'): [/]").strip()
-                if refinement:
-                    if custom_instructions:
-                        custom_instructions += f", {refinement}"
-                    else:
-                        custom_instructions = refinement
-                continue # Loop back with instructions
-            elif choice == "5":
-                edited_message = Prompt.ask(f"\n[bold blue]Edit message[/]", default=message).strip()
+            elif choice == "3":
+                # Implementation of pre-filled input for editing
+                import readline
+                def hook():
+                    readline.insert_text(message)
+                    readline.redisplay()
+                
+                readline.set_pre_input_hook(hook)
+                try:
+                    edited_message = input("\nEdit message: ").strip()
+                finally:
+                    readline.set_pre_input_hook() or None # Reset the hook
+
                 if edited_message:
                     self.git.commit_and_push(edited_message)
                     break
