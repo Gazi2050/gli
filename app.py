@@ -50,7 +50,8 @@ class GLIApp:
         parser = argparse.ArgumentParser(description="gli - Modern Git Wrapper")
         
         parser.add_argument("-v", "--version", action="version", version=f"%(prog)s {VERSION}")
-        parser.add_argument("-c", "--commit", help="Commit and push: gli -c 'msg'")
+        parser.add_argument("-c", "--commit", nargs="?", const="prompt", help="Commit and push: gli -c 'msg'")
+        parser.add_argument("-ac", "--ai-commit", action="store_true", help="Generate message using AI and commit")
         parser.add_argument("-l", "--log", action="store_true", help="View git log")
         parser.add_argument("-rl", "--reflog", action="store_true", help="View git reflog")
         parser.add_argument("-rs", "--reset", choices=["soft", "hard"], help="Reset last commit")
@@ -58,7 +59,6 @@ class GLIApp:
         parser.add_argument("-ct", "--changeTime", nargs="?", const="", metavar="DATE", help="Change commit time")
         parser.add_argument("-ca", "--changeAuthor", action="store_true", help="Change commit author")
         parser.add_argument("-cm", "--changeMessage", action="store_true", help="Change commit message")
-        parser.add_argument("-ac", "--ai-commit", action="store_true", help="Generate message using AI and commit")
         
         parser.add_argument("command", nargs="?", choices=["profile", "me"], help="Command to run")
         parser.add_argument("username", nargs="?", help="GitHub username for profile")
@@ -89,6 +89,19 @@ class GLIApp:
             self.show_profile()
         else:
             self.help.render()
+
+    def handle_manual_commit(self):
+        """
+        Prompt the user for a commit message, then stage and push.
+        """
+        self.git.console.print("[bold cyan]Manual Commit[/]")
+        message = self.git.console.input("[bold white]Enter commit message: [/]").strip()
+        
+        if not message:
+            self.git.console.print("[bold red]✗ Error:[/] Commit message cannot be empty.")
+            return
+            
+        self.git.commit_and_push(message)
 
     def handle_ai_commit(self):
         """
