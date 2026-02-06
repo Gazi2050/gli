@@ -56,7 +56,7 @@ class GitHubAPI:
         encoded_url = "aHR0cHM6Ly9kaW55LWNsaS52ZXJjZWwuYXBwL2FwaS92Mi9jb21taXQ="
         return base64.b64decode(encoded_url).decode('utf-8')
 
-    def generate_ai_commit(self, git_diff, username, repo_name):
+    def generate_ai_commit(self, git_diff, username, repo_name, custom_instructions=""):
         """
         Send a git diff to the AI backend to generate a meaningful commit message.
 
@@ -64,6 +64,7 @@ class GitHubAPI:
             git_diff (str): The staged changes (git diff --staged).
             username (str): The local git username for identification.
             repo_name (str): The repository name for identification.
+            custom_instructions (str): Optional refinement instructions.
 
         Returns:
             str: The generated commit message, or None if the request fails.
@@ -93,7 +94,7 @@ class GitHubAPI:
                     },
                     "Tone": "casual",
                     "Length": "short",
-                    "CustomInstructions": "",
+                    "CustomInstructions": custom_instructions,
                     "HashAfterCommit": False
                 }
             }
