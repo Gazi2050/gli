@@ -10,13 +10,18 @@ class GitActions:
     # This class expects run_command, get_current_branch, and console to be available 
     # (via GitCore mixin).
 
-    def commit_and_push(self, message: str, path: str = ".") -> bool:
+    def commit_and_push(self, message: str, path: str = ".", no_verify: bool = False) -> bool:
         """
         Stage changes, commit, and push. Automatically handles upstream tracking.
         """
         with self.console.status("[bold green]Working on your commit...[/]"):
             if not self.run_command(["add", path]): return False
-            if not self.run_command(["commit", "-m", message]): return False
+            
+            commit_cmd = ["commit", "-m", message]
+            if no_verify:
+                commit_cmd.append("--no-verify")
+                
+            if not self.run_command(commit_cmd): return False
             
             branch = self.get_current_branch()
             has_upstream = False
@@ -69,7 +74,7 @@ class GitActions:
             
         if success:
             self.console.print(Panel(
-                f"Active Branch: [bold cyan]{name}[/]\nTracking origin.",
+                f"Active Branch: [bold green]{name}[/]\nTracking origin.",
                 title="Branch Switch", border_style="blue", box=box.ROUNDED
             ))
         return success

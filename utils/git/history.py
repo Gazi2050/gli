@@ -13,7 +13,7 @@ class GitHistory:
         Prompt the user to select the breadth of a history modification.
         """
         self.console.print(Panel(
-            f"[bold cyan]{title}[/]\n\n"
+            f"[bold green]{title}[/]\n\n"
             f"[1] Last Commit Only\n"
             f"[2] Specific Commit (by Hash)\n"
             f"[3] All Commits in Branch", 
@@ -93,8 +93,8 @@ class GitHistory:
         if success:
             detail = f"Target: [bold]{target_hash if scope == 'specific' else scope.capitalize()}[/]"
             self.console.print(Panel(
-                f"{detail}\nNew Author: [bold cyan]{author_str}[/]",
-                title="Identity Swapped", border_style="cyan", box=box.ROUNDED
+                f"{detail}\nNew Author: [bold green]{author_str}[/]",
+                title="Identity Swapped", border_style="green", box=box.ROUNDED
             ))
         return success
 
@@ -102,7 +102,7 @@ class GitHistory:
         """
         Interactively update the commit message of the most recent commit.
         """
-        self.console.print("[bold cyan]Message Rewriter[/]")
+        self.console.print("[bold green]Message Rewriter[/]")
         new_msg = self.console.input("[bold white]Enter new commit message: [/]")
 
         with self.console.status("[bold green]Updating message...[/]"):

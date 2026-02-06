@@ -18,7 +18,7 @@ class ProfileView:
         bio = user_data.get('bio') or "[italic white]No bio available.[/]"
         
         stats = [
-            f"[bold cyan]Public Repos:[/] {user_data.get('public_repos', 0)}",
+            f"[bold green]Public Repos:[/] {user_data.get('public_repos', 0)}",
             f"[bold magenta]Followers:[/] {user_data.get('followers', 0)}",
             f"[bold yellow]Following:[/] {user_data.get('following', 0)}"
         ]
@@ -30,7 +30,7 @@ class ProfileView:
         created = user_data.get('created_at', '')[:10]
 
         meta_info = []
-        if location: meta_info.append(f"[bold cyan]📍  Location:[/] {location}")
+        if location: meta_info.append(f"[bold green]📍  Location:[/] {location}")
         if twitter: meta_info.append(f"[bold blue]🐦  Twitter:[/] @{twitter}")
         if blog: meta_info.append(f"[bold green]🔗  Site:[/] {blog}")
         meta_info.append(f"[bold white]🗓️  Joined:[/] {created}")
@@ -45,9 +45,9 @@ class ProfileView:
         self.console.print(
             Panel(
                 "\n".join(content),
-                border_style="cyan",
+                border_style="green",
                 box=box.ROUNDED,
-                title="[bold cyan]GitHub Profile[/]",
+                title="[bold green]GitHub Profile[/]",
                 padding=(1, 2)
             )
         )

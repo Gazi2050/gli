@@ -18,8 +18,8 @@ class GitLog:
                 capture_output=True, text=True, check=True
             )
             
-            table = Table(title="Git History", box=box.ROUNDED, border_style="cyan")
-            table.add_column("Hash", style="dim cyan", no_wrap=True)
+            table = Table(title="Git History", box=box.ROUNDED, border_style="green")
+            table.add_column("Hash", style="dim green", no_wrap=True)
             table.add_column("Date & Time", style="green")
             table.add_column("Author", style="yellow")
             table.add_column("Message", style="white")

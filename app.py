@@ -43,6 +43,7 @@ class GLIApp:
         parser.add_argument("-ct", "--changeTime", nargs="?", const="", metavar="DATE", help="History: Change time")
         parser.add_argument("-ca", "--changeAuthor", action="store_true", help="History: Change author")
         parser.add_argument("-cm", "--changeMessage", action="store_true", help="History: Change message")
+        parser.add_argument("-nv", "--no-verify", action="store_true", help="Skip git hooks")
         
         parser.add_argument("command", nargs="?", choices=["profile", "me"], help="Profile commands")
         parser.add_argument("username", nargs="?", help="Target username")
@@ -52,12 +53,12 @@ class GLIApp:
         # Routing Logic
         if args.commit is not None:
             if args.commit == "prompt":
-                self.commit_ctrl.handle_manual_commit()
+                self.commit_ctrl.handle_manual_commit(no_verify=args.no_verify)
             else:
-                self.git.commit_and_push(args.commit)
+                self.git.commit_and_push(args.commit, no_verify=args.no_verify)
         
         elif args.ai_commit:
-            self.commit_ctrl.handle_ai_commit()
+            self.commit_ctrl.handle_ai_commit(no_verify=args.no_verify)
             
         elif args.log:
             self.git.show_log()

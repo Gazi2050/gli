@@ -12,20 +12,20 @@ class CommitController:
         self.git = git_manager
         self.ai = ai_service
 
-    def handle_manual_commit(self):
+    def handle_manual_commit(self, no_verify: bool = False):
         """
         Prompt the user for a commit message, then stage and push.
         """
-        self.git.console.print("[bold cyan]Manual Commit[/]")
+        self.git.console.print("[bold green]Manual Commit[/]")
         message = self.git.console.input("[bold white]Enter commit message: [/]").strip()
         
         if not message:
             self.git.console.print("[bold red]✗ Error:[/] Commit message cannot be empty.")
             return
             
-        self.git.commit_and_push(message)
+        self.git.commit_and_push(message, no_verify=no_verify)
 
-    def handle_ai_commit(self):
+    def handle_ai_commit(self, no_verify: bool = False):
         """
         Orchestrate the AI-powered commit workflow.
         """
@@ -41,16 +41,16 @@ class CommitController:
         repo_name = self.git.get_repo_name()
 
         while True:
-            with self.git.console.status("[bold cyan]Analyzing changes with AI...[/]"):
+            with self.git.console.status("[bold green]Analyzing changes with AI...[/]"):
                 message = self.ai.generate_ai_commit(diff, username, repo_name)
                 
             if not message:
                 self.git.console.print("[bold red]✗ Error:[/] Failed to generate message from AI.")
                 return
 
-            self.git.console.print(f"\n[bold cyan]AI Proposal:[/] [bold white]{message}[/]")
+            self.git.console.print(f"\n[bold green]AI Proposal:[/] [bold white]{message}[/]")
 
-            self.git.console.print(f"\n[bold cyan][1][/] [white]Commit & Push[/]")
+            self.git.console.print(f"\n[bold green][1][/] [white]Commit & Push[/]")
             self.git.console.print(f"[bold yellow][2][/] [white]Regenerate[/]")
             self.git.console.print(f"[bold blue][3][/] [white]Edit message manually[/]")
             self.git.console.print(f"[bold red][4][/] [white]Cancel[/]")
@@ -58,7 +58,7 @@ class CommitController:
             choice = self.git.console.input("\n[bold white]Select action (1/2/3/4): [/]").strip()
 
             if choice == "1":
-                self.git.commit_and_push(message)
+                self.git.commit_and_push(message, no_verify=no_verify)
                 break
             elif choice == "2":
                 continue 
@@ -79,7 +79,7 @@ class CommitController:
                     readline.set_pre_input_hook(None)
 
                 if edited_message:
-                    self.git.commit_and_push(edited_message)
+                    self.git.commit_and_push(edited_message, no_verify=no_verify)
                     break
                 else:
                     self.git.console.print("[bold yellow]⚠ Info:[/] Message was empty or cancelled. Returning to proposal.")
