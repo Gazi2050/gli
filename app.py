@@ -163,29 +163,25 @@ class GLIApp:
                 readline.set_pre_input_hook(hook)
                 try:
                     self.git.console.print("\n[bold blue]Edit message:[/]")
-                    # Draw a full empty box first
-                    width = 76
-                    border = "─" * (width - 2)
-                    self.git.console.print(f"╭{border}╮")
-                    self.git.console.print(f"│{' ' * (width - 2)}│")
-                    self.git.console.print(f"╰{border}╯")
+                    # Use a clean top border
+                    self.git.console.print("╭" + "─" * 74 + "╮")
                     
-                    # Move cursor UP 2 lines and RIGHT 2 spaces to be inside the box
-                    # \033[2A = up 2, \033[2C = forward 2
-                    print("\033[2A\033[2C", end="", flush=True)
+                    # The prompt starts the left border. 
+                    # Note: We don't draw the right/bottom border until AFTER input
+                    # so that wrapping long messages doesn't break the UI layout.
+                    edited_message = input("│ ")
                     
-                    edited_message = input().strip()
-                    
-                    # Move cursor DOWN 1 line to exit the box area after enter
-                    print("\033[1B", end="", flush=True)
+                    # Draw the final bottom border
+                    self.git.console.print("╰" + "─" * 74 + "╯")
                 except (EOFError, KeyboardInterrupt):
                     edited_message = None
-                    print("\033[1B", end="", flush=True)
+                    print() # Move to new line after interrupt
                 finally:
                     readline.set_pre_input_hook(None)
 
-                if edited_message:
-                    self.git.commit_and_push(edited_message)
+                # Check if we have a message (not None and not just whitespace)
+                if edited_message and edited_message.strip():
+                    self.git.commit_and_push(edited_message.strip())
                     break
                 else:
                     self.git.console.print("[bold yellow]⚠ Info:[/] Message was empty or cancelled. Returning to proposal.")
