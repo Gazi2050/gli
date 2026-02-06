@@ -63,7 +63,7 @@ class GitHubAPI:
         Request an AI-generated commit message based on staged changes.
 
         This method construct a detailed JSON payload containing the git diff and 
-        a 'config' object that mirrors the server's expected Diny configuration 
+        a 'config' object that mirrors the server's expected AI configuration 
         structure (including theme, tone, and conventional commit rules).
 
         Args:
