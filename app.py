@@ -158,8 +158,10 @@ class GLIApp:
                 
                 readline.set_pre_input_hook(hook)
                 try:
-                    self.git.console.print("\n[bold blue]Edit message:[/] ", end="")
-                    edited_message = input().strip()
+                    # Use a fixed prompt inside input() so it can't be deleted easily
+                    # ANSI: \033[1;34m is bold blue, \033[0m is reset
+                    prompt = "\033[1;34mEdit message:\033[0m "
+                    edited_message = input(prompt).strip()
                 except (EOFError, KeyboardInterrupt):
                     edited_message = None
                     print() # Move to new line after interrupt
@@ -167,8 +169,8 @@ class GLIApp:
                     readline.set_pre_input_hook(None)
 
                 # Check if we have a message (not None and not just whitespace)
-                if edited_message and edited_message.strip():
-                    self.git.commit_and_push(edited_message.strip())
+                if edited_message:
+                    self.git.commit_and_push(edited_message)
                     break
                 else:
                     self.git.console.print("[bold yellow]⚠ Info:[/] Message was empty or cancelled. Returning to proposal.")
