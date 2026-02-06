@@ -13,19 +13,10 @@ class ProfileView:
         self.console = Console()
 
     def render(self, user_data, repos_data=None):
-        """
-        Render user data into a compact terminal card.
-
-        Args:
-            user_data (dict): Public profile metadata.
-            repos_data (list, optional): Unused in this minimalist view.
-        """
-        # Header Info
         name = user_data.get('name', 'GitHub User')
         login = user_data.get('login', 'N/A')
         bio = user_data.get('bio') or "[italic white]No bio available.[/]"
         
-        # Stats Row
         stats = [
             f"[bold cyan]Public Repos:[/] {user_data.get('public_repos', 0)}",
             f"[bold magenta]Followers:[/] {user_data.get('followers', 0)}",
@@ -33,7 +24,6 @@ class ProfileView:
         ]
         stats_row = "  •  ".join(stats)
 
-        # Meta Info
         location = user_data.get('location')
         twitter = user_data.get('twitter_username')
         blog = user_data.get('blog')
@@ -45,7 +35,6 @@ class ProfileView:
         if blog: meta_info.append(f"[bold green]🔗  Site:[/] {blog}")
         meta_info.append(f"[bold white]🗓️  Joined:[/] {created}")
 
-        # Construct Final Card
         content = [
             f"[bold white font_size=20]{name}[/] [dim](@{login})[/]",
             f"{bio}\n",

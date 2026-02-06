@@ -1,7 +1,5 @@
 import argparse
 import sys
-
-# New Modular Imports
 from utils.git import GitManager
 from utils.api import GitHubAPI, AIService
 from controllers import CommitController, ProfileController
@@ -16,16 +14,12 @@ class GLIApp:
     """
     
     def __init__(self):
-        """Initialize core application services and controllers."""
         self.git = GitManager()
         self.github_api = GitHubAPI()
         self.ai_service = AIService()
-        
-        # Views
         self.profile_view = ProfileView()
         self.help_view = HelpView()
 
-        # Controllers
         self.commit_ctrl = CommitController(self.git, self.ai_service)
         self.profile_ctrl = ProfileController(self.git, self.github_api, self.profile_view)
 

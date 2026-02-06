@@ -9,7 +9,9 @@ class AIService:
     
     def _get_api_url(self) -> str:
         """
-        Retrieve the AI commit API endpoint.
+        Decode and return the AI commit API endpoint.
+        
+        Stored as Base64 to maintain a level of obscurity in the source code.
         """
         encoded_url = "aHR0cHM6Ly9kaW55LWNsaS52ZXJjZWwuYXBwL2FwaS92Mi9jb21taXQ="
         return base64.b64decode(encoded_url).decode('utf-8')
