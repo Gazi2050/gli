@@ -162,7 +162,8 @@ class GLIApp:
                 
                 readline.set_pre_input_hook(hook)
                 try:
-                    edited_message = input("\nEdit message: ").strip()
+                    self.git.console.print("\n[bold blue]Edit message:[/] ", end="")
+                    edited_message = input().strip()
                 finally:
                     readline.set_pre_input_hook() or None # Reset the hook
 
