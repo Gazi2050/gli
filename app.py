@@ -159,8 +159,9 @@ class GLIApp:
                 readline.set_pre_input_hook(hook)
                 try:
                     # Use a fixed prompt inside input() so it can't be deleted easily
-                    # ANSI: \033[1;34m is bold blue, \033[0m is reset
-                    prompt = "\033[1;34mEdit message:\033[0m "
+                    # \x01 and \x02 tell readline which characters are non-printing (ANSI codes)
+                    # This prevents long messages from overwriting the label when wrapping.
+                    prompt = "\x01\033[1;34m\x02Edit message:\x01\033[0m\x02 "
                     edited_message = input(prompt).strip()
                 except (EOFError, KeyboardInterrupt):
                     edited_message = None
