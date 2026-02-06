@@ -3,6 +3,8 @@ from utils.api import GitHubAPI
 from utils.git_utils import GitManager
 from components.profile_view import ProfileView
 from components.help_view import HelpView
+from rich.panel import Panel
+from rich import box
 
 class GLIApp:
     """
@@ -110,27 +112,48 @@ class GLIApp:
         """
         Stage all changes, generate a commit message using AI, and push.
         """
-        with self.git.console.status("[bold cyan]Preparing AI-powered commit...[/]"):
-            # Stage all changes first, just like the -c flag does
-            if not self.git.run_command(["add", "."]):
-                return
+        # Stage all changes first
+        if not self.git.run_command(["add", "."]):
+            return
 
-            diff = self.git.get_staged_diff()
-            if not diff:
-                self.git.console.print("[bold yellow]⚠ Info:[/] No changes detected in the repository.")
-                return
+        diff = self.git.get_staged_diff()
+        if not diff:
+            self.git.console.print("[bold yellow]⚠ Info:[/] No changes detected in the repository.")
+            return
 
-            username = self.git.get_github_username() or "unknown-user"
-            repo_name = self.git.get_repo_name()
-            
-            message = self.api.generate_ai_commit(diff, username, repo_name)
-            
+        username = self.git.get_github_username() or "unknown-user"
+        repo_name = self.git.get_repo_name()
+
+        while True:
+            with self.git.console.status("[bold cyan]Analyzing changes with AI...[/]"):
+                message = self.api.generate_ai_commit(diff, username, repo_name)
+                
             if not message:
                 self.git.console.print("[bold red]✗ Error:[/] Failed to generate message from AI.")
                 return
 
-        # Use the generated message with existing commit logic (will stage again, which is safe)
-        self.git.commit_and_push(message)
+            # Show the generated message
+            self.git.console.print()
+            self.git.console.print(Panel(
+                f"[bold white]{message}[/]",
+                title="AI PROPOSAL", border_style="cyan", box=box.ROUNDED
+            ))
+
+            # Prompt for action
+            self.git.console.print(f"\n[bold cyan][1][/] [white]Commit & Push[/]")
+            self.git.console.print(f"[bold yellow][2][/] [white]Regenerate[/]")
+            self.git.console.print(f"[bold red][3][/] [white]Cancel[/]")
+            
+            choice = self.git.console.input("\n[bold white]Select action (1/2/3): [/]").strip()
+
+            if choice == "1":
+                self.git.commit_and_push(message)
+                break
+            elif choice == "2":
+                continue # Loop back to generate again
+            else:
+                self.git.console.print("[bold yellow]Aborted.[/]")
+                break
 
 if __name__ == "__main__":
     GLIApp().run()
