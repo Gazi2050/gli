@@ -52,11 +52,22 @@ class GitManager:
         if not url:
             return "unknown-repo"
         
-        # Handle SSH (git@github.com:user/repo.git) and HTTPS (https://github.com/user/repo.git)
         repo_name = url.split("/")[-1]
         if repo_name.endswith(".git"):
             repo_name = repo_name[:-4]
         return repo_name
+
+    def get_current_branch(self):
+        """
+        Retrieve the name of the currently active branch.
+
+        Returns:
+            str: The active branch name, or None if detection fails.
+        """
+        try:
+            return subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode("utf-8").strip()
+        except subprocess.CalledProcessError:
+            return None
 
     def get_staged_diff(self):
         """
@@ -96,7 +107,8 @@ class GitManager:
 
     def commit_and_push(self, message, path="."):
         """
-        Stage changes, commit, and push to origin using current system time.
+        Stage changes, commit, and push. Automatically handles upstream tracking 
+        for new branches.
 
         Args:
             message (str): The commit message.
@@ -108,7 +120,25 @@ class GitManager:
         with self.console.status("[bold green]Working on your commit...[/]"):
             if not self.run_command(["add", path]): return False
             if not self.run_command(["commit", "-m", message]): return False
-            if not self.run_command(["push"]): return False
+            
+            # Smart Push: Detect if we need to set upstream
+            branch = self.get_current_branch()
+            
+            has_upstream = False
+            if branch:
+                try:
+                    subprocess.check_output(["git", "rev-parse", "--symbolic-full-name", "@{u}"], stderr=subprocess.DEVNULL)
+                    has_upstream = True
+                except subprocess.CalledProcessError:
+                    has_upstream = False
+
+            if has_upstream:
+                push_success = self.run_command(["push"])
+            else:
+                # If no upstream or first push on branch, set it to origin
+                push_success = self.run_command(["push", "--set-upstream", "origin", branch])
+
+            if not push_success: return False
         
         self.console.print(Panel(
             f"Message: [bold white]{message}[/]\nStatus: [bold green]Pushed to Remote[/]",
