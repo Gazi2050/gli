@@ -7,133 +7,142 @@
 ╚██████╔╝███████╗██║
  ╚═════╝ ╚══════╝╚═╝    
 ```
-> **a git wrapper to make developer life easy**
+> **A modern Git wrapper that simplifies developer workflows.**
 
-A lightweight Git wrapper simplifying complex workflows into intuitive terminal commands with built-in AI intelligence.
-
-### **📥 Installation**
-
-Download the standalone binary for your OS from the [Latest Release](https://github.com/Gazi2050/gli/releases).
-
-| Platform | One-Line Install Command | 🗑️ Uninstall |
-| :--- | :--- | :--- |
-| **🐧 Linux** | `sudo mv gli /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli` | `sudo rm /usr/local/bin/gli` |
-| **🍎 macOS** | `sudo mv gli-mac /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli` | `sudo rm /usr/local/bin/gli` |
-| **🪟 Windows** | `move gli.exe C:\Windows\System32\` (CMD Admin) | `del C:\Windows\System32\gli.exe` |
-
-#### **🔄 Updating**
-To update, just download the new binary and run the install command again to overwrite the old one.
-```bash
-gli --version  # Verify your version
-```
-
-### **🚀 AI-Powered Workflow**
-
-`gli` now integrates directly with a powerful AI backend to analyze your changes and suggest the perfect commit messages.
-
-- **Smart Analysis**: Analyzes your staged diff to suggest Conventional Commit messages.
-- **Interactive Review**: Confirm, regenerate, or edit the AI proposal directly on the same line.
-- **Zero Configuration**: Works out of the box with built-in API integration.
-
-### **💎 Features Overview**
-
-| Feature | Commands | Quick Link |
-| :--- | :--- | :--- |
-| **Manual Commit** | `-c`, `--commit` | [Usage](#-manual-commit--push) |
-| **AI Commit** | `-ac`, `--ai-commit` | [Usage](#-ai-commit--push) |
-| **History** | `-l`, `--log` | [Usage](#-history-log) |
-| **Recovery** | `-rl`, `--reflog` | [Usage](#-recovery-reflog) |
-| **Reset** | `-rs`, `--reset` | [Usage](#-reset-commit) |
-| **Branch** | `-s`, `-lb`, `-rb` | [Usage](#-branch-management) |
-| **Time Warp**| `-ct`, `--changeTime`| [Usage](#-time-warp) |
-| **Identity Swap** | `-ca`, `--changeAuthor`| [Usage](#-identity-swap) |
-| **Message Rewrite**  | `-cm`, `--changeMessage`| [Usage](#-message-rewrite) |
-| **No Verify** | `-nv`, `--no-verify` | [Usage](#-manual-commit--push) |
-| **Profile Dashboard** | `me`, `profile` | [Usage](#-github-profile) |
+**gli** is a lightweight, powerful CLI tool designed to make Git operations faster, smarter, and more intuitive. It combines essential Git commands with AI-powered enhancements and useful developer utilities.
 
 ---
 
-### **📖 Detailed Usage**
+## 📥 Installation
 
-#### **📦 Manual Commit & Push**
-Stages all changes and commits with your message. 
-- If you omit the message, `gli` starts an **interactive prompt**.
-- **Skipping Hooks**: Use `-nv` to skip tests/linting during commit.
+Download the standalone binary for your OS from the [Latest Release](https://github.com/Gazi2050/gli/releases).
+
+| Platform | One-Line Install Command |
+| :--- | :--- |
+| **🐧 Linux** | `sudo mv gli /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli` |
+| **🍎 macOS** | `sudo mv gli-mac /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli` |
+| **🪟 Windows** | `move gli.exe C:\Windows\System32\` (CMD Admin) |
+
+### 🔄 Updating
+Simply download the new binary and overwrite the existing one.
 ```bash
-# With message
-gli -c "feat: added new feature"
-gli -c "fix: fast fix" -nv
+gli --version
+```
 
+---
+
+## 🚀 Features at a Glance
+
+| Command | Flag | Description | Usage |
+| :--- | :--- | :--- | :--- |
+| **Commit & Push** | `-c`, `--commit` | Stage all, commit with msg, and push | [View](#manual-commit) |
+| **AI Commit** | `-ac`, `--ai-commit` | Generate AI message and push | [View](#ai-powered-commit) |
+| **Log** | `-l`, `--log` | View commit history graph | [View](#git-log) |
+| **Reflog** | `-rl`, `--reflog` | View git reflog | [View](#reflog-recovery) |
+| **Reset** | `-rs`, `--reset` | Reset last commit (soft/hard) | [View](#reset) |
+| **Switch Branch** | `-s`, `--switch`<br>`-lb`, `--local-branch`<br>`-rb`, `--remote-branch` | Create branch<br>[-lb] Local only<br>[-rb] Push remote | [View](#2-branch-management) |
+| **Change Time** | `-ct`, `--changeTime` | Update commit timestamp(s) | [View](#history-modification-the-fix-it-tools) |
+| **Change Author** | `-ca`, `--changeAuthor` | Update commit author identity | [View](#history-modification-the-fix-it-tools) |
+| **Change Message** | `-cm`, `--changeMessage` | Update last commit message | [View](#history-modification-the-fix-it-tools) |
+| **No Verify** | `-nv`, `--no-verify` | Skip git hooks during commit | [View](#manual-commit) |
+| **My Profile** | `me` | View your GitHub profile | [View](#5-github-profile) |
+| **User Profile** | `profile <user>` | View a specific GitHub profile | [View](#5-github-profile) |
+
+---
+
+## 📖 Command Reference
+
+### 1. Commit & Push
+Streamline your daily workflow. Stages all changes (`git add .`), commits, and pushes to the current branch.
+
+#### Manual Commit
+Pop a prompt to enter your message, or provide it directly.
+```bash
 # Interactive prompt
 gli -c
-gli -c -nv
+
+# Direct message
+gli -c "feat: implementation completed"
+
+# Skip verification (pre-commit hooks)
+gli -c "wip: save work" -nv
 ```
 
-#### **🤖 AI Commit & Push**
-Stages all changes and generates a suggested commit message using AI. You can then review the proposal.
-- **Option 1**: Commit & Push (Standard flow)
-- **Option 2**: Regenerate (Ask AI for a new suggestion)
-- **Option 3**: Edit manual (Modify the message directly in-line)
-- **Skipping Hooks**: Add `-nv` or `--no-verify` to bypass pre-commit hooks.
+#### AI-Powered Commit
+Let AI analyze your `git diff` and suggest a Conventional Commit message.
 ```bash
 gli -ac
-gli -ac -nv
+```
+**Options:**
+- `[1] Commit & Push`: Accept the AI suggestion.
+- `[2] Regenerate`: Ask for a different suggestion.
+- `[3] Edit`: Modify the AI suggestion manually.
+
+---
+
+### 2. Branch Management
+Create and switch branches instantly. `gli` handles upstream tracking automatically.
+
+```bash
+# Create branch & push to origin (Default)
+gli -s "feature/new-ui"
+
+# Create LOCAL branch only (No push)
+gli -s "experiment/test" -lb
+
+# Create & push matching REMOTE branch explicitly
+gli -s "fix/bug-123" -rb
 ```
 
-#### **📜 History (Log)**
-Displays a clean, color-coded table of recent commit history.
+---
+
+### 3. History & Logging
+
+#### Git Log
+A cleaner, color-coded alternative to `git log`.
 ```bash
 gli -l
 ```
 
-#### **🔄 Recovery (Reflog)**
-Views the Git reference log to find and recover lost commits.
+#### Reflog (Recovery)
+View the reference log to recover lost commits or reset states.
 ```bash
 gli -rl
 ```
 
-#### **⏪ Reset Commit**
-Resets the branch to the previous commit (`soft` or `hard`).
+---
+
+### 4. Resets & Corrections
+Fix mistakes without memorizing complex Git flags.
+
+#### Reset
+Reset your branch to the previous commit.
 ```bash
+# Soft Reset (Keep changes staged)
 gli -rs soft
+
+# Hard Reset (Discard all changes)
+gli -rs hard
 ```
 
-#### **🌿 Branch Management**
-Creates a new branch and switches to it.
+#### History Modification (The "Fix It" Tools)
+Interactive tools to modify the **most recent commit**.
+- **Change Message**: `gli -cm`
+- **Change Author**: `gli -ca`
+- **Change Date**: `gli -ct`
+
+---
+
+### 5. GitHub Profile
+View a stylish dashboard of GitHub statistics for yourself or others.
 ```bash
-# Default (Push to remote)
-gli -s "feature-branch"
-
-# Local Only (No push)
-gli -s "feature-branch" -lb
-
-# Explicit Remote Push
-gli -s "feature-branch" -rb
-```
-
-#### **⏳ Time Warp**
-Interactively update commit timestamps for history correction.
-```bash
-gli -ct
-```
-
-#### **🆔 Identity Swap**
-Interactively update author name/email for commits.
-```bash
-gli -ca
-```
-
-#### **✍️ Message Rewrite**
-Update the most recent commit message with an interactive prompt.
-```bash
-gli -cm
-```
-
-#### **👤 GitHub Profile**
-View a stylish dashboard of public GitHub profile statistics.
-```bash
+# Your profile
 gli me
-gli profile gazi2050
+
+# Another user's profile
+gli profile torvalds
 ```
+
+---
 
 <p align="center">Made with ❤️ for Git users</p>

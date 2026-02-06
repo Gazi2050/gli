@@ -18,7 +18,8 @@ class GitHistory:
             f"[3] All Commits in Branch", 
             box=box.ROUNDED
         ))
-        choice = self.console.input("[bold white]Select scope (1/2/3): [/]")
+        prompt = "\x01\033[1;37m\x02Select scope (1/2/3): \x01\033[0m\x02"
+        choice = input(prompt).strip()
         if choice == "2": return "specific"
         if choice == "3": return "all"
         return "single"
@@ -31,11 +32,11 @@ class GitHistory:
         
         target_hash = ""
         if scope == "specific":
-            target_hash = self.console.input("[bold white]Enter commit hash: [/]").strip()
+            target_hash = input("\x01\033[1;37m\x02Enter commit hash: \x01\033[0m\x02").strip()
 
         if not date_str:
-            date = self.console.input("[bold white]Select commit date (YYYY-MM-DD): [/]")
-            time = self.console.input("[bold white]Select commit time (HH:MM, 24h): [/]")
+            date = input("\x01\033[1;37m\x02Select commit date (YYYY-MM-DD): \x01\033[0m\x02").strip()
+            time = input("\x01\033[1;37m\x02Select commit time (HH:MM, 24h): \x01\033[0m\x02").strip()
             date_str = f"{date} {time}:00"
 
         if scope in ["all", "specific"]:
@@ -69,10 +70,10 @@ class GitHistory:
         
         target_hash = ""
         if scope == "specific":
-            target_hash = self.console.input("[bold white]Enter commit hash: [/]").strip()
+            target_hash = input("\x01\033[1;37m\x02Enter commit hash: \x01\033[0m\x02").strip()
 
-        name = self.console.input("[bold white]Enter author name: [/]")
-        email = self.console.input("[bold white]Enter author email: [/]")
+        name = input("\x01\033[1;37m\x02Enter author name: \x01\033[0m\x02").strip()
+        email = input("\x01\033[1;37m\x02Enter author email: \x01\033[0m\x02").strip()
         author_str = f"{name} <{email}>"
 
         if scope in ["all", "specific"]:
@@ -102,7 +103,7 @@ class GitHistory:
         Interactively update the commit message of the most recent commit.
         """
         self.console.print("[bold green]Message Rewriter[/]")
-        new_msg = self.console.input("[bold white]Enter new commit message: [/]")
+        new_msg = input("\x01\033[1;37m\x02Enter new commit message: \x01\033[0m\x02").strip()
 
         with self.console.status("[bold green]Updating message...[/]"):
             success = self.run_command(["commit", "--amend", "-m", new_msg])

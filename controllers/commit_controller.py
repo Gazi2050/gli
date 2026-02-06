@@ -56,7 +56,9 @@ class CommitController:
             self.git.console.print(f"[bold blue][3][/] [white]Edit message manually[/]")
             self.git.console.print(f"[bold red][4][/] [white]Cancel[/]")
             
-            choice = self.git.console.input("\n[bold white]Select action (1/2/3/4): [/]").strip()
+            print()
+            prompt = "\x01\033[1;37m\x02Select action (1/2/3/4): \x01\033[0m\x02 "
+            choice = input(prompt).strip()
 
             if choice == "1":
                 self.git.commit_and_push(message, no_verify=no_verify)
