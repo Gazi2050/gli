@@ -44,7 +44,7 @@ gli --version  # Verify your version
 | **History** | `-l`, `--log` | [Usage](#-history-log) |
 | **Recovery** | `-rl`, `--reflog` | [Usage](#-recovery-reflog) |
 | **Reset** | `-rs`, `--reset` | [Usage](#-reset-commit) |
-| **Branch** | `-s`, `--switch` | [Usage](#-branch-management) |
+| **Branch** | `-s`, `-lb`, `-rb` | [Usage](#-branch-management) |
 | **Time Warp**| `-ct`, `--changeTime`| [Usage](#-time-warp) |
 | **Identity Swap** | `-ca`, `--changeAuthor`| [Usage](#-identity-swap) |
 | **Message Rewrite**  | `-cm`, `--changeMessage`| [Usage](#-message-rewrite) |
@@ -99,9 +99,16 @@ gli -rs soft
 ```
 
 #### **🌿 Branch Management**
-Creates a new branch, switches to it, and pushes to remote.
+Creates a new branch and switches to it.
 ```bash
+# Default (Push to remote)
 gli -s "feature-branch"
+
+# Local Only (No push)
+gli -s "feature-branch" -lb
+
+# Explicit Remote Push
+gli -s "feature-branch" -rb
 ```
 
 #### **⏳ Time Warp**

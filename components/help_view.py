@@ -46,7 +46,7 @@ class HelpView:
             ("Log", "-l, --log", "View commit history graph"),
             ("Reflog", "-rl, --reflog", "View git reflog"),
             ("Reset", "-rs, --reset", "Reset last commit (soft/hard)"),
-            ("Switch Branch", "-s, --switch\n-lb, -rb", "Create branch\n[-lb] Local only\n[-rb] Push remote"),
+            ("Switch Branch", "-s, --switch\n-lb, --local-branch\n-rb, --remote-branch", "Create branch\n[-lb] Local only\n[-rb] Push remote"),
             ("Change Time", "-ct, --changeTime", "Update commit timestamp(s)"),
             ("Change Author", "-ca, --changeAuthor", "Update commit author identity"),
             ("Change Message", "-cm, --changeMessage", "Update last commit message"),
