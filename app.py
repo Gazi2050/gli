@@ -65,8 +65,11 @@ class GLIApp:
 
         args = parser.parse_args()
 
-        if args.commit:
-            self.git.commit_and_push(args.commit)
+        if args.commit is not None:
+            if args.commit == "prompt":
+                self.handle_manual_commit()
+            else:
+                self.git.commit_and_push(args.commit)
         elif args.ai_commit:
             self.handle_ai_commit()
         elif args.log:
