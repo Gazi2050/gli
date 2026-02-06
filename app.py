@@ -162,17 +162,8 @@ class GLIApp:
                 
                 readline.set_pre_input_hook(hook)
                 try:
-                    self.git.console.print("\n[bold blue]Edit message:[/]")
-                    # Use a clean top border
-                    self.git.console.print("╭" + "─" * 74 + "╮")
-                    
-                    # The prompt starts the left border. 
-                    # Note: We don't draw the right/bottom border until AFTER input
-                    # so that wrapping long messages doesn't break the UI layout.
-                    edited_message = input("│ ")
-                    
-                    # Draw the final bottom border
-                    self.git.console.print("╰" + "─" * 74 + "╯")
+                    self.git.console.print("\n[bold blue]Edit message:[/] ", end="")
+                    edited_message = input().strip()
                 except (EOFError, KeyboardInterrupt):
                     edited_message = None
                     print() # Move to new line after interrupt
