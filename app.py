@@ -163,19 +163,29 @@ class GLIApp:
                 readline.set_pre_input_hook(hook)
                 try:
                     self.git.console.print("\n[bold blue]Edit message:[/]")
-                    # Visually start the box
-                    self.git.console.print("╭" + "─" * 70 + "╮")
-                    # The prompt itself acts as the side border
-                    edited_message = input("│ ")
-                    # Visually end the box
-                    self.git.console.print("╰" + "─" * 70 + "╯")
+                    # Draw a full empty box first
+                    width = 76
+                    border = "─" * (width - 2)
+                    self.git.console.print(f"╭{border}╮")
+                    self.git.console.print(f"│{' ' * (width - 2)}│")
+                    self.git.console.print(f"╰{border}╯")
+                    
+                    # Move cursor UP 2 lines and RIGHT 2 spaces to be inside the box
+                    # \033[2A = up 2, \033[2C = forward 2
+                    print("\033[2A\033[2C", end="", flush=True)
+                    
+                    edited_message = input().strip()
+                    
+                    # Move cursor DOWN 1 line to exit the box area after enter
+                    print("\033[1B", end="", flush=True)
                 except (EOFError, KeyboardInterrupt):
                     edited_message = None
+                    print("\033[1B", end="", flush=True)
                 finally:
                     readline.set_pre_input_hook(None)
 
-                if edited_message and edited_message.strip():
-                    self.git.commit_and_push(edited_message.strip())
+                if edited_message:
+                    self.git.commit_and_push(edited_message)
                     break
                 else:
                     self.git.console.print("[bold yellow]⚠ Info:[/] Message was empty or cancelled. Returning to proposal.")
