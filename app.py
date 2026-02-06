@@ -111,9 +111,20 @@ class GLIApp:
 
     def handle_ai_commit(self):
         """
-        Stage all changes, generate a commit message using AI, and push.
+        Orchestrate the AI-powered commit workflow.
+        
+        This method performs the following steps:
+        1. Stages all local changes using 'git add .'.
+        2. Retrieves the staged diff.
+        3. Enters an interactive loop where the AI proposes a commit message.
+        4. Provides the user with options to:
+           - [1] Commit & Push immediately.
+           - [2] Regenerate the message (re-calls the AI).
+           - [3] Edit manually: Uses a pre-filled readline buffer with a 'protected' 
+                 ANSI-styled prompt (\x01/\x02 tags) to prevent label deletion and 
+                 ensure correct terminal wrapping.
+           - [4] Cancel the operation.
         """
-        # Stage all changes first
         if not self.git.run_command(["add", "."]):
             return
 
@@ -133,10 +144,8 @@ class GLIApp:
                 self.git.console.print("[bold red]✗ Error:[/] Failed to generate message from AI.")
                 return
 
-            # Show the generated message
             self.git.console.print(f"\n[bold cyan]AI Proposal:[/] [bold white]{message}[/]")
 
-            # Prompt for action
             self.git.console.print(f"\n[bold cyan][1][/] [white]Commit & Push[/]")
             self.git.console.print(f"[bold yellow][2][/] [white]Regenerate[/]")
             self.git.console.print(f"[bold blue][3][/] [white]Edit message manually[/]")
@@ -150,7 +159,6 @@ class GLIApp:
             elif choice == "2":
                 continue 
             elif choice == "3":
-                # Implementation of pre-filled input for editing
                 import readline
                 def hook():
                     readline.insert_text(message)
@@ -158,18 +166,15 @@ class GLIApp:
                 
                 readline.set_pre_input_hook(hook)
                 try:
-                    # Use a fixed prompt inside input() so it can't be deleted easily
-                    # \x01 and \x02 tell readline which characters are non-printing (ANSI codes)
-                    # This prevents long messages from overwriting the label when wrapping.
+                    # \x01 and \x02 are mandatory for readline to correctly handle ANSI wide chars
                     prompt = "\x01\033[1;34m\x02Edit message:\x01\033[0m\x02 "
                     edited_message = input(prompt).strip()
                 except (EOFError, KeyboardInterrupt):
                     edited_message = None
-                    print() # Move to new line after interrupt
+                    print()
                 finally:
                     readline.set_pre_input_hook(None)
 
-                # Check if we have a message (not None and not just whitespace)
                 if edited_message:
                     self.git.commit_and_push(edited_message)
                     break
