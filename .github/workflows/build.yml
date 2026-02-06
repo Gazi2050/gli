@@ -110,7 +110,12 @@ jobs:
       - name: Build Binary (Linux)
         if: runner.os == 'Linux'
         run: |
-          pyinstaller --onefile --name gli --clean app.py
+          pyinstaller --onefile --name gli --clean \
+          --exclude-module _tkinter \
+          --exclude-module tkinter \
+          --exclude-module tcl \
+          app.py
+          strip dist/gli
 
 
       - name: Build Binary (macOS)

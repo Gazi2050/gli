@@ -28,7 +28,7 @@ class HelpView:
         """
         Render the logo, tagline, and command overview table to the console.
         """
-        logo_text = Text(self.ASCII_LOGO, style="bold cyan")
+        logo_text = Text(self.ASCII_LOGO, style="bold green")
         tagline_text = Text(self.TAGLINE, style="italic dim white")
         
         self.console.print(logo_text)
@@ -50,6 +50,7 @@ class HelpView:
             ("Change Time", "-ct, --changeTime", "Update commit timestamp(s)"),
             ("Change Author", "-ca, --changeAuthor", "Update commit author identity"),
             ("Change Message", "-cm, --changeMessage", "Update last commit message"),
+            ("No Verify", "-nv, --no-verify", "Skip git hooks during commit"),
             ("My Profile", "me", "View your GitHub profile"),
             ("User Profile", "profile <user>", "View a specific GitHub profile"),
         ]
@@ -58,4 +59,4 @@ class HelpView:
             table.add_row(cmd, flag, desc)
 
         self.console.print(table)
-        self.console.print("\n[dim]Usage example: [bold cyan]gli -c 'feat: msg'[/] or [bold cyan]gli -ac[/][/]")
+        self.console.print("\n[dim]Usage example: [bold green]gli -c 'feat: msg'[/] or [bold green]gli -ac[/][/]")
