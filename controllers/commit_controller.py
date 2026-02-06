@@ -17,7 +17,6 @@ class CommitController:
         Prompt the user for a commit message, then stage and push.
         """
         self.git.console.print("[bold green]Manual Commit[/]")
-        # \x01 and \x02 are mandatory for readline to correctly handle ANSI wide chars
         prompt = "\x01\033[1;37m\x02Enter commit message: \x01\033[0m\x02"
         message = input(prompt).strip()
         
@@ -71,7 +70,6 @@ class CommitController:
                 
                 readline.set_pre_input_hook(hook)
                 try:
-                    # \x01 and \x02 are mandatory for readline to correctly handle ANSI wide chars
                     prompt = "\x01\033[1;34m\x02Edit message:\x01\033[0m\x02 "
                     edited_message = input(prompt).strip()
                 except (EOFError, KeyboardInterrupt):

@@ -72,7 +72,6 @@ class GLIApp:
             self.git.reset_commit(args.reset)
             
         elif args.switch:
-            # Default to remote push unless local-only is specified
             push_to_remote = True
             if args.local_branch:
                 push_to_remote = False
