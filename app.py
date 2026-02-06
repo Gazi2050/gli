@@ -45,6 +45,9 @@ class GLIApp:
         parser.add_argument("-cm", "--changeMessage", action="store_true", help="History: Change message")
         parser.add_argument("-nv", "--no-verify", action="store_true", help="Skip git hooks")
         
+        parser.add_argument("-lb", "--local-branch", action="store_true", help="Branch: Create local only")
+        parser.add_argument("-rb", "--remote-branch", action="store_true", help="Branch: Push to remote (default)")
+        
         parser.add_argument("command", nargs="?", choices=["profile", "me"], help="Profile commands")
         parser.add_argument("username", nargs="?", help="Target username")
 
@@ -69,7 +72,13 @@ class GLIApp:
             self.git.reset_commit(args.reset)
             
         elif args.switch:
-            self.git.switch_branch(args.switch)
+            push_to_remote = True
+            if args.local_branch:
+                push_to_remote = False
+            elif args.remote_branch:
+                push_to_remote = True
+                
+            self.git.switch_branch(args.switch, push_to_remote=push_to_remote)
             
         elif args.changeTime is not None:
             self.git.change_commit_time(args.changeTime if args.changeTime != "" else None)

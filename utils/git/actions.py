@@ -61,18 +61,24 @@ class GitActions:
             ))
         return success
 
-    def switch_branch(self, name: str) -> bool:
+    def switch_branch(self, name: str, push_to_remote: bool = True) -> bool:
         """
-        Create a new branch and switch to it immediately.
+        Create a new branch and switch to it. Optionally push to origin.
         """
         with self.console.status(f"[bold blue]Switching to {name}...[/]"):
             if not self.run_command(["checkout", "-b", name]):
                 return False
-            success = self.run_command(["push", "-u", "origin", name])
             
-        if success:
+            if push_to_remote:
+                push_success = self.run_command(["push", "-u", "origin", name])
+                status_msg = "Tracking origin."
+            else:
+                push_success = True
+                status_msg = "Local branch only."
+            
+        if push_success:
             self.console.print(Panel(
-                f"Active Branch: [bold green]{name}[/]\nTracking origin.",
+                f"Active Branch: [bold green]{name}[/]\n{status_msg}",
                 title="Branch Switch", border_style="blue", box=box.ROUNDED
             ))
-        return success
+        return push_success
