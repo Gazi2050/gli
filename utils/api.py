@@ -47,26 +47,34 @@ class GitHubAPI:
 
     def _get_api_url(self):
         """
-        Decode and return the Base64 encoded AI commit API endpoint.
+        Retrieve the AI commit API endpoint.
+        
+        The URL is stored as a Base64 encoded string to maintain a level of obscurity 
+        within the source code, preventing direct scrapers from easily finding the endpoint.
         
         Returns:
             str: The decoded API URL.
         """
-        # Encrypted URL: https://diny-cli.vercel.app/api/v2/commit
         encoded_url = "aHR0cHM6Ly9kaW55LWNsaS52ZXJjZWwuYXBwL2FwaS92Mi9jb21taXQ="
         return base64.b64decode(encoded_url).decode('utf-8')
 
-    def generate_ai_commit(self, git_diff, username, repo_name):
+    def generate_ai_commit(self, git_diff, username, repo_name, custom_instructions=""):
         """
-        Send a git diff to the AI backend to generate a meaningful commit message.
+        Request an AI-generated commit message based on staged changes.
+
+        This method construct a detailed JSON payload containing the git diff and 
+        a 'config' object that mirrors the server's expected Diny configuration 
+        structure (including theme, tone, and conventional commit rules).
 
         Args:
-            git_diff (str): The staged changes (git diff --staged).
-            username (str): The local git username for identification.
-            repo_name (str): The repository name for identification.
+            git_diff (str): The output of 'git diff --staged'.
+            username (str): GitHub username for context.
+            repo_name (str): Repository name for context.
+            custom_instructions (str, optional): Additional guidance for the AI (e.g., 'be more technical').
 
         Returns:
-            str: The generated commit message, or None if the request fails.
+            str: The AI-generated commit message, or None if the API request fails or 
+                 the response structure is invalid.
         """
         url = self._get_api_url()
         payload = {
@@ -82,18 +90,12 @@ class GitHubAPI:
                     "ConventionalFormat": ["feat", "fix", "docs", "chore", "style", "refactor", "test", "perf"],
                     "Emoji": False,
                     "EmojiMap": {
-                        "feat": "🚀",
-                        "fix": "🐛",
-                        "docs": "📚",
-                        "style": "🎨",
-                        "refactor": "♻️",
-                        "test": "✅",
-                        "chore": "🔧",
-                        "perf": "⚡"
+                        "feat": "🚀", "fix": "🐛", "docs": "📚", "style": "🎨",
+                        "refactor": "♻️", "test": "✅", "chore": "🔧", "perf": "⚡"
                     },
                     "Tone": "casual",
                     "Length": "short",
-                    "CustomInstructions": "",
+                    "CustomInstructions": custom_instructions,
                     "HashAfterCommit": False
                 }
             }

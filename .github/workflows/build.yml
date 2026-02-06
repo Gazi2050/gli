@@ -3,6 +3,8 @@ name: Build & Release Binaries
 on:
   push:
     branches: [ "main" ]
+
+  # Allow manual run, but jobs will only execute on main
   workflow_dispatch:
 
 permissions:
@@ -10,10 +12,15 @@ permissions:
 
 jobs:
   release:
+    # 🔒 Lock this job to main branch only
+    if: github.ref == 'refs/heads/main'
+
     name: Generate Version & Create Release
     runs-on: ubuntu-latest
+
     outputs:
       new_tag: ${{ steps.versioning.outputs.new_tag }}
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,30 +31,35 @@ jobs:
         run: |
           # Get the latest tag, default to v0.0.0 if none exists
           LATEST_TAG=$(git tag --sort=-v:refname | head -n 1)
+
           if [ -z "$LATEST_TAG" ]; then
             LATEST_TAG="v0.0.0"
           fi
           
           echo "Latest tag: $LATEST_TAG"
-          
+
           # Strip 'v' and split into components
           VERSION=${LATEST_TAG#v}
           IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
-          
+
           # Increment logic: 0.0.9 -> 0.1.0
           PATCH=$((PATCH + 1))
+
           if [ $PATCH -gt 9 ]; then
             PATCH=0
             MINOR=$((MINOR + 1))
           fi
+
           if [ $MINOR -gt 9 ]; then
             MINOR=0
             MAJOR=$((MAJOR + 1))
           fi
-          
+
           NEW_TAG="v$MAJOR.$MINOR.$PATCH"
+
           echo "New tag: $NEW_TAG"
           echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -60,52 +72,64 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+
   build:
+    # 🔒 Lock this job to main branch only
+    if: github.ref == 'refs/heads/main'
+
     name: Build on ${{ matrix.os }}
     needs: release
     runs-on: ${{ matrix.os }}
+
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Python 3.12
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.12"
 
-    - name: Inject Version Tag
-      shell: bash
-      run: |
-        python -c "import sys; p='app.py'; c=open(p).read().replace('[[STAMP]]', sys.argv[1]); open(p, 'w').write(c)" ${{ needs.release.outputs.new_tag }}
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install rich requests pyinstaller
 
-    - name: Build Binary (Linux)
-      if: runner.os == 'Linux'
-      run: |
-        pyinstaller --onefile --name gli --clean app.py
+      - name: Inject Version Tag
+        shell: bash
+        run: |
+          python -c "import sys; p='app.py'; c=open(p).read().replace('[[STAMP]]', sys.argv[1]); open(p, 'w').write(c)" ${{ needs.release.outputs.new_tag }}
 
-    - name: Build Binary (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        pyinstaller --onefile --name gli --clean app.py
-        mv dist/gli dist/gli-mac
 
-    - name: Build Binary (Windows)
-      if: runner.os == 'Windows'
-      run: |
-        pyinstaller --onefile --name gli --clean app.py
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install rich requests pyinstaller
 
-    - name: Upload to Release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: ${{ needs.release.outputs.new_tag }}
-        files: dist/gli*
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Binary (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          pyinstaller --onefile --name gli --clean app.py
+
+
+      - name: Build Binary (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          pyinstaller --onefile --name gli --clean app.py
+          mv dist/gli dist/gli-mac
+
+
+      - name: Build Binary (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          pyinstaller --onefile --name gli --clean app.py
+
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.release.outputs.new_tag }}
+          files: dist/gli*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
