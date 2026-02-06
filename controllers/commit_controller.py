@@ -17,7 +17,9 @@ class CommitController:
         Prompt the user for a commit message, then stage and push.
         """
         self.git.console.print("[bold green]Manual Commit[/]")
-        message = self.git.console.input("[bold white]Enter commit message: [/]").strip()
+        # \x01 and \x02 are mandatory for readline to correctly handle ANSI wide chars
+        prompt = "\x01\033[1;37m\x02Enter commit message: \x01\033[0m\x02"
+        message = input(prompt).strip()
         
         if not message:
             self.git.console.print("[bold red]✗ Error:[/] Commit message cannot be empty.")

@@ -114,6 +114,7 @@ jobs:
           --exclude-module _tkinter \
           --exclude-module tkinter \
           --exclude-module tcl \
+          --collect-data rich \
           app.py
           strip dist/gli
 
@@ -121,14 +122,18 @@ jobs:
       - name: Build Binary (macOS)
         if: runner.os == 'macOS'
         run: |
-          pyinstaller --onefile --name gli --clean app.py
+          pyinstaller --onefile --name gli --clean \
+          --collect-data rich \
+          app.py
           mv dist/gli dist/gli-mac
 
 
       - name: Build Binary (Windows)
         if: runner.os == 'Windows'
         run: |
-          pyinstaller --onefile --name gli --clean app.py
+          pyinstaller --onefile --name gli --clean \
+          --collect-data rich \
+          app.py
 
 
       - name: Upload to Release
