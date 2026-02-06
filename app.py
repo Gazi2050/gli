@@ -134,11 +134,7 @@ class GLIApp:
                 return
 
             # Show the generated message
-            self.git.console.print()
-            self.git.console.print(Panel(
-                f"[bold white]{message}[/]",
-                title="AI PROPOSAL", border_style="cyan", box=box.ROUNDED
-            ))
+            self.git.console.print(f"\n[bold cyan]AI Proposal:[/] [bold white]{message}[/]")
 
             # Prompt for action
             self.git.console.print(f"\n[bold cyan][1][/] [white]Commit & Push[/]")
