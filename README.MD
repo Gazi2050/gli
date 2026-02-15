@@ -9,6 +9,4 @@ gli is a lightweight, powerful CLI tool designed to make Git operations faster, 
 
 **Documentation** available at [gli-site](https://gli-tool.vercel.app/)
 
----
-
 <p align="center">Made with ❤️ for Git users</p>
