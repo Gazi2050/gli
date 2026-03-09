@@ -260,7 +260,7 @@ func buildDeps() (*appDeps, error) {
 		return nil, err
 	}
 
-	profileCtrl, err := controllers.NewProfileController(core, githubClient)
+	profileCtrl, err := controllers.NewProfileController(core, githubClient, ui.RenderProfile)
 	if err != nil {
 		return nil, err
 	}

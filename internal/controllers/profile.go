@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/Gazi2050/gli/internal/api"
-	"github.com/Gazi2050/gli/internal/ui"
 )
 
 type GitProfileIdentity interface {
@@ -20,20 +19,29 @@ type GitHubProfileAPI interface {
 type ProfileController struct {
 	git       GitProfileIdentity
 	github    GitHubProfileAPI
+	renderer  func(user *api.User, repos []api.Repo) string
 	repoLimit int
 }
 
-func NewProfileController(git GitProfileIdentity, github GitHubProfileAPI) (*ProfileController, error) {
+func NewProfileController(
+	git GitProfileIdentity,
+	github GitHubProfileAPI,
+	renderer func(user *api.User, repos []api.Repo) string,
+) (*ProfileController, error) {
 	if git == nil {
 		return nil, fmt.Errorf("git identity source is required")
 	}
 	if github == nil {
 		return nil, fmt.Errorf("github client is required")
 	}
+	if renderer == nil {
+		return nil, fmt.Errorf("profile renderer is required")
+	}
 
 	return &ProfileController{
 		git:       git,
 		github:    github,
+		renderer:  renderer,
 		repoLimit: 5,
 	}, nil
 }
@@ -72,5 +80,5 @@ func (c *ProfileController) ShowProfile(username string) (string, error) {
 		return "", fmt.Errorf("failed to fetch repositories for %q: %w", resolvedUsername, err)
 	}
 
-	return ui.RenderProfile(user, repos), nil
+	return c.renderer(user, repos), nil
 }
