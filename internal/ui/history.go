@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -57,6 +58,8 @@ type historyFinishedMsg struct {
 	Err error
 }
 
+type historyDoneTimeoutMsg struct{}
+
 func NewHistoryModel(history HistoryService, operation HistoryOperation) HistoryModel {
 	sp := spinner.New()
 	sp.Spinner = spinner.Dot
@@ -109,9 +112,11 @@ func (m HistoryModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.state = historyStateDone
 		if msg.Err != nil {
 			m.errorMsg = msg.Err.Error()
-			return m, tea.Quit
+			return m, tea.Tick(300*time.Millisecond, func(time.Time) tea.Msg { return historyDoneTimeoutMsg{} })
 		}
 		m.successMsg = "history updated successfully"
+		return m, tea.Tick(300*time.Millisecond, func(time.Time) tea.Msg { return historyDoneTimeoutMsg{} })
+	case historyDoneTimeoutMsg:
 		return m, tea.Quit
 	}
 
@@ -345,7 +350,7 @@ func (m HistoryModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	case historyStateDone:
-		return m, tea.Quit
+		return m, nil
 	}
 
 	return m, nil

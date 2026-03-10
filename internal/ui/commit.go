@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -69,6 +70,8 @@ type aiGeneratedMsg struct {
 type commitFinishedMsg struct {
 	Err error
 }
+
+type commitDoneTimeoutMsg struct{}
 
 func NewCommitModel(git GitManager, ai AIService, noVerify bool, customInstructions string) CommitModel {
 	ti := textinput.New()
@@ -145,9 +148,11 @@ func (m CommitModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.state = commitStateDone
 		if msg.Err != nil {
 			m.errorMsg = msg.Err.Error()
-			return m, tea.Quit
+			return m, tea.Tick(300*time.Millisecond, func(time.Time) tea.Msg { return commitDoneTimeoutMsg{} })
 		}
 		m.successMsg = "commit and push completed"
+		return m, tea.Tick(300*time.Millisecond, func(time.Time) tea.Msg { return commitDoneTimeoutMsg{} })
+	case commitDoneTimeoutMsg:
 		return m, tea.Quit
 	}
 
@@ -262,7 +267,7 @@ func (m CommitModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return m, cmd
 		}
 	case commitStateDone:
-		return m, tea.Quit
+		return m, nil
 	}
 
 	return m, nil
