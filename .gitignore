@@ -1,14 +1,9 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-dist/
-*.egg-info/
-.venv
-venv/
+# Go
+/dist/
+*.exe
+*.test
+*.out
+coverage/
 
 # IDE & OS
 .vscode/
