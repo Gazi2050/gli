@@ -237,6 +237,12 @@ func newRootCmd() (*cobra.Command, error) {
 
 func buildDeps() (*appDeps, error) {
 	core := gitpkg.NewGitCore("")
+
+	// Optional: theme selection via `git config gli.theme <name>`.
+	if themeName, err := core.GetConfig("gli.theme"); err == nil {
+		_ = ui.SetTheme(themeName)
+	}
+
 	actions, err := gitpkg.NewGitActions(core)
 	if err != nil {
 		return nil, err

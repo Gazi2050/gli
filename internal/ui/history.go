@@ -8,7 +8,6 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 type HistoryService interface {
@@ -43,6 +42,7 @@ type HistoryModel struct {
 	operation  HistoryOperation
 	scope      string
 	targetHash string
+	scopeIndex int
 	inputs     []textinput.Model
 	active     int
 	errorMsg   string
@@ -119,92 +119,88 @@ func (m HistoryModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m HistoryModel) View() string {
-	titleStyle := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("42"))
-	errorStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
-	successStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("42")).Bold(true)
-	hintStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
-	boxStyle := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("240")).Padding(1, 2)
+	st := GetStyles()
 
+	title := ""
 	var content string
 	switch m.state {
 	case historyStateScopeSelect:
+		title = historyTitle(m.operation)
 		content = strings.Join([]string{
-			titleStyle.Render(historyTitle(m.operation)),
+			st.Muted.Render("Scope"),
 			"",
-			"[1] Last commit",
-			"[2] Specific hash",
-			"[3] All commits",
+			renderScopeOption(m.scopeIndex, 0, "Last commit"),
+			renderScopeOption(m.scopeIndex, 1, "Specific hash"),
+			renderScopeOption(m.scopeIndex, 2, "All commits"),
 			"",
-			hintStyle.Render("Choose 1/2/3, or q to cancel"),
+			st.Warning.Render("Warning: rewriting history can be destructive, especially for all commits."),
+			"",
+			st.Hint.Render("Use arrows or j/k and Enter. Shortcuts: 1/2/3. Press q to cancel."),
 		}, "\n")
 	case historyStateHashInput:
+		title = historyTitle(m.operation)
 		content = strings.Join([]string{
-			titleStyle.Render(historyTitle(m.operation)),
-			"",
-			"Enter target commit hash:",
+			st.Text.Render("Enter target commit hash:"),
 			m.inputs[0].View(),
 			"",
-			errorStyle.Render(m.errorMsg),
-			hintStyle.Render("Enter to continue, Esc to go back"),
+			st.Error.Render(m.errorMsg),
+			st.Hint.Render("Enter to continue • Esc to go back • Ctrl+C to quit"),
 		}, "\n")
 	case historyStateTimeInput:
+		title = "Change Commit Time"
 		content = strings.Join([]string{
-			titleStyle.Render("Change Commit Time"),
-			"",
-			"Date (YYYY-MM-DD):",
+			st.Text.Render("Date (YYYY-MM-DD):"),
 			m.inputs[0].View(),
 			"",
-			"Time (HH:MM or HH:MM:SS):",
+			st.Text.Render("Time (HH:MM or HH:MM:SS):"),
 			m.inputs[1].View(),
 			"",
-			errorStyle.Render(m.errorMsg),
-			hintStyle.Render("Enter next field, Tab switch, Esc back"),
+			st.Error.Render(m.errorMsg),
+			st.Hint.Render("Tab switch • Enter next/confirm • Esc back • Ctrl+C quit"),
 		}, "\n")
 	case historyStateAuthorInput:
+		title = "Change Commit Author"
 		content = strings.Join([]string{
-			titleStyle.Render("Change Commit Author"),
-			"",
-			"Author name:",
+			st.Text.Render("Author name:"),
 			m.inputs[0].View(),
 			"",
-			"Author email:",
+			st.Text.Render("Author email:"),
 			m.inputs[1].View(),
 			"",
-			errorStyle.Render(m.errorMsg),
-			hintStyle.Render("Enter next field, Tab switch, Esc back"),
+			st.Error.Render(m.errorMsg),
+			st.Hint.Render("Tab switch • Enter next/confirm • Esc back • Ctrl+C quit"),
 		}, "\n")
 	case historyStateMessageInput:
+		title = "Change Commit Message"
 		content = strings.Join([]string{
-			titleStyle.Render("Change Commit Message"),
-			"",
-			"New commit message:",
+			st.Text.Render("New commit message:"),
 			m.inputs[0].View(),
 			"",
-			errorStyle.Render(m.errorMsg),
-			hintStyle.Render("Enter to continue, Esc to cancel"),
+			st.Error.Render(m.errorMsg),
+			st.Hint.Render("Enter to continue • Esc to cancel • Ctrl+C to quit"),
 		}, "\n")
 	case historyStateConfirm:
+		title = "Confirm History Rewrite"
 		content = strings.Join([]string{
-			titleStyle.Render("Confirm History Rewrite"),
+			st.Text.Render(confirmSummary(m)),
 			"",
-			confirmSummary(m),
-			"",
-			hintStyle.Render("Proceed? [y] Yes / [n] No (q to cancel)"),
+			st.Hint.Render("Proceed? [y] Yes / [n] No (q to cancel)"),
 		}, "\n")
 	case historyStateRunning:
-		content = fmt.Sprintf("%s Applying history changes...", m.spinner.View())
+		title = historyTitle(m.operation)
+		content = fmt.Sprintf("%s %s", m.spinner.View(), st.Text.Render("Applying history changes..."))
 	case historyStateDone:
 		switch {
 		case m.errorMsg != "":
-			content = errorStyle.Render("Error: "+m.errorMsg) + "\n" + hintStyle.Render("Press q to exit")
+			return MessageBox(BoxError, "History Update Failed", m.errorMsg+"\n\nPress q to exit")
 		case m.cancelled:
-			content = hintStyle.Render("History update cancelled. Press q to exit")
+			return MessageBox(BoxWarning, "Cancelled", "History update cancelled.\n\nPress q to exit")
 		default:
-			content = successStyle.Render(m.successMsg) + "\n" + hintStyle.Render("Press q to exit")
+			return MessageBox(BoxSuccess, "Success", m.successMsg+"\n\nPress q to exit")
 		}
 	}
 
-	return boxStyle.Render(content)
+	return RenderBox(BoxPrimary, title, content)
 }
 
 func (m HistoryModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
@@ -215,11 +211,41 @@ func (m HistoryModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch m.state {
 	case historyStateScopeSelect:
 		switch msg.String() {
+		case "up", "k":
+			if m.scopeIndex > 0 {
+				m.scopeIndex--
+			}
+			return m, nil
+		case "down", "j":
+			if m.scopeIndex < 2 {
+				m.scopeIndex++
+			}
+			return m, nil
+		case "enter":
+			switch m.scopeIndex {
+			case 0:
+				m.scope = "single"
+				return m.toFieldInput(), nil
+			case 1:
+				m.scope = "specific"
+				m.state = historyStateHashInput
+				m.inputs = []textinput.Model{newInput("Commit hash", 64)}
+				m.inputs[0].Focus()
+				m.active = 0
+				m.errorMsg = ""
+				return m, textinput.Blink
+			case 2:
+				m.scope = "all"
+				return m.toFieldInput(), nil
+			}
+			return m, nil
 		case "1":
 			m.scope = "single"
+			m.scopeIndex = 0
 			return m.toFieldInput(), nil
 		case "2":
 			m.scope = "specific"
+			m.scopeIndex = 1
 			m.state = historyStateHashInput
 			m.inputs = []textinput.Model{newInput("Commit hash", 64)}
 			m.inputs[0].Focus()
@@ -228,6 +254,7 @@ func (m HistoryModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return m, textinput.Blink
 		case "3":
 			m.scope = "all"
+			m.scopeIndex = 2
 			return m.toFieldInput(), nil
 		case "q":
 			m.state = historyStateDone
@@ -450,6 +477,15 @@ func historyTitle(op HistoryOperation) string {
 	default:
 		return "History"
 	}
+}
+
+func renderScopeOption(selectedIdx, idx int, label string) string {
+	st := GetStyles()
+	prefix := "  "
+	if selectedIdx == idx {
+		prefix = st.Accent.Render("> ")
+	}
+	return prefix + st.Text.Render(label)
 }
 
 func confirmSummary(m HistoryModel) string {

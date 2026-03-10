@@ -74,10 +74,11 @@ func NewCommitModel(git GitManager, ai AIService, noVerify bool, customInstructi
 	ti.Placeholder = "Write commit message"
 	ti.Prompt = "> "
 	ti.CharLimit = 300
-	ti.Width = 80
+	ti.Width = min(80, max(30, BoxInnerWidth()-4))
 
 	sp := spinner.New()
 	sp.Spinner = spinner.Dot
+	sp.Style = lipgloss.NewStyle().Foreground(GetCurrentTheme().Primary)
 
 	return CommitModel{
 		state:       commitStateStaging,
@@ -100,6 +101,12 @@ func (m CommitModel) Init() tea.Cmd {
 
 func (m CommitModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		// Keep the input usable across narrow terminals.
+		boxW := BoxWidthForTerminalWidth(msg.Width)
+		inner := boxW - 6
+		m.textInput.Width = min(80, max(30, inner-4))
+		return m, nil
 	case tea.KeyMsg:
 		return m.handleKey(msg)
 	case spinner.TickMsg:
@@ -152,55 +159,49 @@ func (m CommitModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m CommitModel) View() string {
-	titleStyle := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("42"))
-	errorStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
-	successStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("42")).Bold(true)
-	hintStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
-	boxStyle := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("240")).Padding(1, 2)
+	st := GetStyles()
 
 	var content string
 	switch m.state {
 	case commitStateIdle:
-		content = "Waiting to start AI commit workflow..."
+		content = st.Muted.Render("Waiting to start AI commit workflow...")
 	case commitStateStaging:
-		content = fmt.Sprintf("%s Staging files and loading git context...", m.spinner.View())
+		content = fmt.Sprintf("%s %s", m.spinner.View(), st.Text.Render("Staging files..."))
 	case commitStateLoadingAI:
-		content = fmt.Sprintf("%s Generating AI commit message...", m.spinner.View())
+		content = fmt.Sprintf("%s %s", m.spinner.View(), st.Text.Render("Generating AI commit message..."))
 	case commitStateShowingProposal:
-		content = strings.Join([]string{
-			titleStyle.Render("AI Commit Proposal"),
-			"",
-			m.aiMessage,
-			"",
-			hintStyle.Render("[1] Commit and push"),
-			hintStyle.Render("[2] Regenerate message"),
-			hintStyle.Render("[3] Edit message"),
-			hintStyle.Render("[4] Cancel (or q)"),
+		proposal := RenderInnerBox(BoxPrimary, "AI Commit Proposal", wrapParagraphs(m.aiMessage, BoxInnerWidth()-6))
+		menu := strings.Join([]string{
+			st.Hint.Render("[1] Commit and push"),
+			st.Hint.Render("[2] Regenerate message"),
+			st.Hint.Render("[3] Edit message"),
+			st.Hint.Render("[4] Cancel (or q)"),
 		}, "\n")
+		content = strings.Join([]string{proposal, "", menu}, "\n")
 	case commitStateEditing:
 		content = strings.Join([]string{
-			titleStyle.Render("Edit Commit Message"),
+			RenderTitle("Edit Commit Message"),
 			"",
 			m.textInput.View(),
 			"",
-			errorStyle.Render(m.errorMsg),
+			st.Error.Render(m.errorMsg),
 			"",
-			hintStyle.Render("Enter to commit, Esc to go back"),
+			st.Hint.Render("Enter to commit • Esc to go back • Ctrl+C to quit"),
 		}, "\n")
 	case commitStateCommitting:
-		content = fmt.Sprintf("%s Committing and pushing changes...", m.spinner.View())
+		content = fmt.Sprintf("%s %s", m.spinner.View(), st.Text.Render("Committing and pushing changes..."))
 	case commitStateDone:
 		switch {
 		case m.errorMsg != "":
-			content = errorStyle.Render("Error: "+m.errorMsg) + "\n" + hintStyle.Render("Press q to exit")
+			return MessageBox(BoxError, "Commit Failed", m.errorMsg+"\n\nPress q to exit")
 		case m.cancelled:
-			content = hintStyle.Render("Workflow cancelled. Press q to exit")
+			return MessageBox(BoxWarning, "Cancelled", "Workflow cancelled.\n\nPress q to exit")
 		default:
-			content = successStyle.Render(m.successMsg) + "\n" + hintStyle.Render("Press q to exit")
+			return MessageBox(BoxSuccess, "Success", m.successMsg+"\n\nPress q to exit")
 		}
 	}
 
-	return boxStyle.Render(content)
+	return RenderBox(BoxPrimary, "AI Commit", content)
 }
 
 func (m CommitModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
