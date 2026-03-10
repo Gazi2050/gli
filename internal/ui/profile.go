@@ -35,7 +35,7 @@ func RenderProfile(user *api.User, repos []api.Repo) string {
 		metaLines = append(metaLines, st.Muted.Render("Twitter:")+" "+st.Text.Render("@"+user.TwitterUsername))
 	}
 	if strings.TrimSpace(user.Blog) != "" {
-		metaLines = append(metaLines, st.Muted.Render("Blog:")+" "+st.Text.Render(user.Blog))
+		metaLines = append(metaLines, st.Muted.Render("Site:")+" "+st.Text.Render(user.Blog))
 	}
 	joined := user.CreatedAt
 	if len(joined) >= 10 {
@@ -54,21 +54,6 @@ func RenderProfile(user *api.User, repos []api.Repo) string {
 
 	if len(metaLines) > 0 {
 		sections = append(sections, "", strings.Join(metaLines, "\n"))
-	}
-
-	if len(repos) > 0 {
-		sections = append(sections, "", RenderTitle("Recent Repositories"))
-		for _, repo := range repos {
-			repoLine := "- " + st.Text.Bold(true).Render(valueOr(repo.Name, "unnamed"))
-			if strings.TrimSpace(repo.Language) != "" {
-				repoLine += " " + st.Muted.Render("("+repo.Language+")")
-			}
-			repoLine += " " + st.Muted.Render(fmt.Sprintf("★ %d", repo.StargazersCount))
-			sections = append(sections, repoLine)
-			if strings.TrimSpace(repo.Description) != "" {
-				sections = append(sections, "  "+st.Muted.Render(wrapParagraphs(repo.Description, boxWidth()-8)))
-			}
-		}
 	}
 
 	return RenderBox(BoxPrimary, "GitHub Profile", strings.Join(sections, "\n"))

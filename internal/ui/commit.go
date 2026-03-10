@@ -48,6 +48,7 @@ type CommitModel struct {
 	customNotes string
 	username    string
 	repoName    string
+	menuIndex   int
 
 	git GitManager
 	ai  AIService
@@ -137,6 +138,7 @@ func (m CommitModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.aiMessage = strings.TrimSpace(msg.Message)
 		m.state = commitStateShowingProposal
+		m.menuIndex = 0
 		m.errorMsg = ""
 		return m, nil
 	case commitFinishedMsg:
@@ -172,12 +174,18 @@ func (m CommitModel) View() string {
 	case commitStateShowingProposal:
 		proposal := RenderInnerBox(BoxPrimary, "AI Commit Proposal", wrapParagraphs(m.aiMessage, BoxInnerWidth()-6))
 		menu := strings.Join([]string{
-			st.Hint.Render("[1] Commit and push"),
-			st.Hint.Render("[2] Regenerate message"),
-			st.Hint.Render("[3] Edit message"),
-			st.Hint.Render("[4] Cancel (or q)"),
+			renderCommitMenuItem(m.menuIndex, 0, "Commit and push"),
+			renderCommitMenuItem(m.menuIndex, 1, "Regenerate message"),
+			renderCommitMenuItem(m.menuIndex, 2, "Edit message"),
+			renderCommitMenuItem(m.menuIndex, 3, "Cancel (or q)"),
 		}, "\n")
-		content = strings.Join([]string{proposal, "", menu}, "\n")
+		content = strings.Join([]string{
+			proposal,
+			"",
+			menu,
+			"",
+			st.Hint.Render("Use ↑/↓ (or j/k) and Enter. Press q to cancel."),
+		}, "\n")
 	case commitStateEditing:
 		content = strings.Join([]string{
 			RenderTitle("Edit Commit Message"),
@@ -213,21 +221,19 @@ func (m CommitModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch m.state {
 	case commitStateShowingProposal:
 		switch msg.String() {
-		case "1":
-			m.state = commitStateCommitting
-			m.errorMsg = ""
-			return m, tea.Batch(m.spinner.Tick, m.commitCmd(m.aiMessage))
-		case "2":
-			m.state = commitStateLoadingAI
-			m.errorMsg = ""
-			return m, tea.Batch(m.spinner.Tick, m.generateAICmd())
-		case "3":
-			m.state = commitStateEditing
-			m.textInput.SetValue(m.aiMessage)
-			m.textInput.Focus()
-			m.errorMsg = ""
-			return m, textinput.Blink
-		case "4", "q":
+		case "up", "k":
+			if m.menuIndex > 0 {
+				m.menuIndex--
+			}
+			return m, nil
+		case "down", "j":
+			if m.menuIndex < 3 {
+				m.menuIndex++
+			}
+			return m, nil
+		case "enter":
+			return m.handleCommitMenuSelect(m.menuIndex)
+		case "q":
 			m.state = commitStateDone
 			m.cancelled = true
 			return m, tea.Quit
@@ -262,6 +268,40 @@ func (m CommitModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, nil
+}
+
+func renderCommitMenuItem(selected, idx int, label string) string {
+	st := GetStyles()
+	prefix := "  "
+	if selected == idx {
+		prefix = st.Accent.Render("> ")
+	}
+	return prefix + st.Hint.Render(label)
+}
+
+func (m CommitModel) handleCommitMenuSelect(idx int) (tea.Model, tea.Cmd) {
+	switch idx {
+	case 0:
+		m.state = commitStateCommitting
+		m.errorMsg = ""
+		return m, tea.Batch(m.spinner.Tick, m.commitCmd(m.aiMessage))
+	case 1:
+		m.state = commitStateLoadingAI
+		m.errorMsg = ""
+		return m, tea.Batch(m.spinner.Tick, m.generateAICmd())
+	case 2:
+		m.state = commitStateEditing
+		m.textInput.SetValue(m.aiMessage)
+		m.textInput.Focus()
+		m.errorMsg = ""
+		return m, textinput.Blink
+	case 3:
+		m.state = commitStateDone
+		m.cancelled = true
+		return m, tea.Quit
+	default:
+		return m, nil
+	}
 }
 
 func (m CommitModel) stageCmd() tea.Cmd {

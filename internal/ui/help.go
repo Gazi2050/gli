@@ -24,95 +24,44 @@ type helpRow struct {
 	Description string
 }
 
-type helpGroup struct {
-	Title string
-	Rows  []helpRow
-}
-
-var helpGroups = []helpGroup{
-	{
-		Title: "Commit",
-		Rows: []helpRow{
-			{Command: "Commit & Push", Flag: "-c, --commit", Description: "Stage all, commit with msg, and push"},
-			{Command: "AI Commit", Flag: "-ac, --ai-commit", Description: "Generate AI message and push"},
-			{Command: "No Verify", Flag: "-nv, --no-verify", Description: "Skip git hooks during commit"},
-		},
-	},
-	{
-		Title: "History",
-		Rows: []helpRow{
-			{Command: "Change Time", Flag: "-ct, --changeTime", Description: "Update commit timestamp(s)"},
-			{Command: "Change Author", Flag: "-ca, --changeAuthor", Description: "Update commit author identity"},
-			{Command: "Change Message", Flag: "-cm, --changeMessage", Description: "Update last commit message"},
-		},
-	},
-	{
-		Title: "Branches & Log",
-		Rows: []helpRow{
-			{Command: "Log", Flag: "-l, --log", Description: "View commit history graph"},
-			{Command: "Reflog", Flag: "-rl, --reflog", Description: "View git reflog"},
-			{Command: "Reset", Flag: "-rs, --reset", Description: "Reset last commit (soft/hard)"},
-			{Command: "Switch Branch", Flag: "-s, --switch\n-lb, --local-branch\n-rb, --remote-branch", Description: "Create branch\n[-lb] Local only\n[-rb] Push remote"},
-		},
-	},
-	{
-		Title: "Profile",
-		Rows: []helpRow{
-			{Command: "My Profile", Flag: "me", Description: "View your GitHub profile"},
-			{Command: "User Profile", Flag: "profile <user>", Description: "View a specific GitHub profile"},
-		},
-	},
+var helpRows = []helpRow{
+	{Command: "Commit & Push", Flag: "-c, --commit", Description: "Stage all, commit with msg, and push"},
+	{Command: "AI Commit", Flag: "-ac, --ai-commit", Description: "Generate AI message and push"},
+	{Command: "Log", Flag: "-l, --log", Description: "View commit history graph"},
+	{Command: "Reflog", Flag: "-rl, --reflog", Description: "View git reflog"},
+	{Command: "Reset", Flag: "-rs, --reset", Description: "Reset last commit (soft/hard)"},
+	{Command: "Switch Branch", Flag: "-s, --switch\n-lb, --local-branch\n-rb, --remote-branch", Description: "Create branch\n[-lb] Local only\n[-rb] Push remote"},
+	{Command: "", Flag: "", Description: ""},
+	{Command: "Change Time", Flag: "-ct, --changeTime", Description: "Update commit timestamp(s)"},
+	{Command: "Change Author", Flag: "-ca, --changeAuthor", Description: "Update commit author identity"},
+	{Command: "Change Message", Flag: "-cm, --changeMessage", Description: "Update last commit message"},
+	{Command: "", Flag: "", Description: ""},
+	{Command: "No Verify", Flag: "-nv, --no-verify", Description: "Skip git hooks during commit"},
+	{Command: "My Profile", Flag: "me", Description: "View your GitHub profile"},
+	{Command: "User Profile", Flag: "profile <user>", Description: "View a specific GitHub profile"},
 }
 
 func RenderHelp() string {
 	st := GetStyles()
 	logoStyle := lipgloss.NewStyle().Foreground(GetCurrentTheme().Primary).Bold(true)
 	taglineStyle := st.Muted.Italic(true)
-	headerStyle := lipgloss.NewStyle().Bold(true).Foreground(GetCurrentTheme().Primary)
-	flagHeaderStyle := lipgloss.NewStyle().Bold(true).Foreground(GetCurrentTheme().Warning)
-	descHeaderStyle := lipgloss.NewStyle().Bold(true).Foreground(GetCurrentTheme().Text)
+	headerStyle := lipgloss.NewStyle().Bold(true).Foreground(GetCurrentTheme().Text)
 	commandCellStyle := lipgloss.NewStyle().Foreground(GetCurrentTheme().Primary).Bold(true)
 	flagCellStyle := lipgloss.NewStyle().Foreground(GetCurrentTheme().Warning)
 	descriptionCellStyle := lipgloss.NewStyle().Foreground(GetCurrentTheme().Text)
-	groupStyle := st.Muted.Bold(true)
+	borderStyle := st.Muted
 
-	commandWidth, flagWidth, descriptionWidth := columnWidths(helpGroups)
-
-	header := strings.Join([]string{
-		headerStyle.Render(padRight("Command", commandWidth)),
-		flagHeaderStyle.Render(padRight("Flag", flagWidth)),
-		descHeaderStyle.Render(padRight("Description", descriptionWidth)),
-	}, "  ")
-
-	lines := []string{header}
-	for gi, group := range helpGroups {
-		if gi > 0 {
-			lines = append(lines, "")
-		}
-		lines = append(lines, groupStyle.Render(group.Title))
-
-		for _, row := range group.Rows {
-			commandLines := wrapCellLines(row.Command, commandWidth)
-			flagLines := wrapCellLines(row.Flag, flagWidth)
-			descriptionLines := wrapCellLines(row.Description, descriptionWidth)
-
-			maxLines := max3(len(commandLines), len(flagLines), len(descriptionLines))
-			for i := 0; i < maxLines; i++ {
-				commandValue := lineAt(commandLines, i)
-				flagValue := lineAt(flagLines, i)
-				descriptionValue := lineAt(descriptionLines, i)
-
-				line := strings.Join([]string{
-					commandCellStyle.Render(padRight(commandValue, commandWidth)),
-					flagCellStyle.Render(padRight(flagValue, flagWidth)),
-					descriptionCellStyle.Render(padRight(descriptionValue, descriptionWidth)),
-				}, "  ")
-				lines = append(lines, line)
-			}
-		}
-	}
-
-	table := strings.Join(lines, "\n")
+	commandWidth, flagWidth, descriptionWidth := columnWidths(helpRows)
+	table := renderTable(
+		[]string{"Command", "Flag", "Description"},
+		helpRows,
+		[]int{commandWidth, flagWidth, descriptionWidth},
+		headerStyle,
+		commandCellStyle,
+		flagCellStyle,
+		descriptionCellStyle,
+		borderStyle,
+	)
 	usage := st.Muted.Render("Usage example: ") + st.Accent.Render("gli -c 'feat: msg'") + st.Muted.Render(" or ") + st.Accent.Render("gli -ac")
 
 	headerBlock := strings.Join([]string{
@@ -122,39 +71,35 @@ func RenderHelp() string {
 
 	return strings.Join([]string{
 		headerBlock,
-		RenderBox(BoxPrimary, "Available Commands", strings.Join([]string{table, "", usage}, "\n")),
+		table,
+		"",
+		usage,
 	}, "\n\n")
 }
 
-func columnWidths(groups []helpGroup) (commandWidth, flagWidth, descriptionWidth int) {
-	// RenderBox uses width = boxWidth(), with border+padding roughly consuming 6 columns.
-	inner := boxWidth() - 6
-	if inner < 50 {
-		inner = 50
+func columnWidths(rows []helpRow) (commandWidth, flagWidth, descriptionWidth int) {
+	tableWidth := BoxWidthForTerminalWidth(TerminalWidth())
+	usable := tableWidth - 4 - (2 * 3) // borders/separators + padding per column
+	if usable < 40 {
+		usable = 40
 	}
 
-	// 3 columns + 2 separators ("  ") => 4 extra spaces.
-	usable := inner - 4
-	if usable < 30 {
-		usable = 30
-	}
-
-	// Start from sensible minima so narrow terminals still look like a table.
-	minCmd, minFlag, minDesc := 12, 18, 20
-	maxCmd, maxFlag := 18, 26
+	minCmd, minFlag, minDesc := 14, 18, 20
+	maxCmd, maxFlag := 22, 30
 
 	longestCmd, longestFlag := len("Command"), len("Flag")
-	for _, g := range groups {
-		for _, row := range g.Rows {
-			for _, line := range strings.Split(row.Command, "\n") {
-				if lipgloss.Width(line) > longestCmd {
-					longestCmd = lipgloss.Width(line)
-				}
+	for _, row := range rows {
+		if row.Command == "" && row.Flag == "" && row.Description == "" {
+			continue
+		}
+		for _, line := range strings.Split(row.Command, "\n") {
+			if lipgloss.Width(line) > longestCmd {
+				longestCmd = lipgloss.Width(line)
 			}
-			for _, line := range strings.Split(row.Flag, "\n") {
-				if lipgloss.Width(line) > longestFlag {
-					longestFlag = lipgloss.Width(line)
-				}
+		}
+		for _, line := range strings.Split(row.Flag, "\n") {
+			if lipgloss.Width(line) > longestFlag {
+				longestFlag = lipgloss.Width(line)
 			}
 		}
 	}
@@ -163,7 +108,6 @@ func columnWidths(groups []helpGroup) (commandWidth, flagWidth, descriptionWidth
 	flagWidth = clamp(longestFlag, minFlag, maxFlag)
 	descriptionWidth = usable - commandWidth - flagWidth
 
-	// Ensure description has enough space; shrink other cols if needed.
 	if descriptionWidth < minDesc {
 		need := minDesc - descriptionWidth
 
@@ -218,6 +162,72 @@ func wrapCellLines(s string, width int) []string {
 		out = append(out, wrapLine(p, width)...)
 	}
 	return out
+}
+
+func renderTable(headers []string, rows []helpRow, widths []int, headerStyle, cmdStyle, flagStyle, descStyle, borderStyle lipgloss.Style) string {
+	tl, tr, bl, br, h, v, t, b, l, r, c := roundedBorderRunes()
+	colW := make([]int, len(widths))
+	for i, w := range widths {
+		if w < 4 {
+			w = 4
+		}
+		colW[i] = w + 2
+	}
+
+	top := borderStyle.Render(tl) + borderStyle.Render(strings.Repeat(h, colW[0])) +
+		borderStyle.Render(t) + borderStyle.Render(strings.Repeat(h, colW[1])) +
+		borderStyle.Render(t) + borderStyle.Render(strings.Repeat(h, colW[2])) +
+		borderStyle.Render(tr)
+
+	header := borderStyle.Render(v) +
+		headerStyle.Render(" "+padRight(headers[0], colW[0]-2)+" ") + borderStyle.Render(v) +
+		headerStyle.Render(" "+padRight(headers[1], colW[1]-2)+" ") + borderStyle.Render(v) +
+		headerStyle.Render(" "+padRight(headers[2], colW[2]-2)+" ") + borderStyle.Render(v)
+
+	sep := borderStyle.Render(l) + borderStyle.Render(strings.Repeat(h, colW[0])) +
+		borderStyle.Render(c) + borderStyle.Render(strings.Repeat(h, colW[1])) +
+		borderStyle.Render(c) + borderStyle.Render(strings.Repeat(h, colW[2])) +
+		borderStyle.Render(r)
+
+	lines := []string{top, header, sep}
+	for _, row := range rows {
+		if row.Command == "" && row.Flag == "" && row.Description == "" {
+			blank := borderStyle.Render(v) + padRight("", colW[0]) +
+				borderStyle.Render(v) + padRight("", colW[1]) +
+				borderStyle.Render(v) + padRight("", colW[2]) +
+				borderStyle.Render(v)
+			lines = append(lines, blank)
+			continue
+		}
+
+		commandLines := wrapCellLines(row.Command, widths[0])
+		flagLines := wrapCellLines(row.Flag, widths[1])
+		descLines := wrapCellLines(row.Description, widths[2])
+		maxLines := max3(len(commandLines), len(flagLines), len(descLines))
+
+		for i := 0; i < maxLines; i++ {
+			commandValue := truncateToWidth(lineAt(commandLines, i), colW[0]-2)
+			flagValue := truncateToWidth(lineAt(flagLines, i), colW[1]-2)
+			descValue := truncateToWidth(lineAt(descLines, i), colW[2]-2)
+
+			line := borderStyle.Render(v) +
+				cmdStyle.Render(" "+padRight(commandValue, colW[0]-2)+" ") +
+				borderStyle.Render(v) +
+				flagStyle.Render(" "+padRight(flagValue, colW[1]-2)+" ") +
+				borderStyle.Render(v) +
+				descStyle.Render(" "+padRight(descValue, colW[2]-2)+" ") +
+				borderStyle.Render(v)
+			lines = append(lines, line)
+		}
+	}
+
+	bottom := borderStyle.Render(bl) + borderStyle.Render(strings.Repeat(h, colW[0])) +
+		borderStyle.Render(b) + borderStyle.Render(strings.Repeat(h, colW[1])) +
+		borderStyle.Render(b) + borderStyle.Render(strings.Repeat(h, colW[2])) +
+		borderStyle.Render(br)
+
+	lines = append(lines, bottom)
+	return strings.Join(lines, "\n")
 }
 
 func clamp(v, lo, hi int) int {

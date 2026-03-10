@@ -163,7 +163,7 @@ func newRootCmd() (*cobra.Command, error) {
 				if err != nil {
 					return err
 				}
-				printLog(entries)
+				fmt.Fprintln(cmd.OutOrStdout(), ui.RenderLogTable("Git History", entries))
 				return nil
 			}
 
@@ -172,7 +172,7 @@ func newRootCmd() (*cobra.Command, error) {
 				if err != nil {
 					return err
 				}
-				printReflog(entries)
+				fmt.Fprintln(cmd.OutOrStdout(), ui.RenderReflogTable("Reflog (Recovery)", entries))
 				return nil
 			}
 
@@ -290,17 +290,7 @@ func promptLine(prompt string) (string, error) {
 	return strings.TrimSpace(line), nil
 }
 
-func printLog(entries []gitpkg.LogEntry) {
-	for _, entry := range entries {
-		fmt.Printf("%s  %s  %s  %s\n", entry.Hash, entry.Time, entry.Author, entry.Message)
-	}
-}
-
-func printReflog(entries []gitpkg.ReflogEntry) {
-	for _, entry := range entries {
-		fmt.Printf("%s  %s  %s  %s\n", entry.Ref, entry.Hash, entry.Time, entry.Message)
-	}
-}
+// legacy plain-text printers removed in favor of themed tables
 
 func normalizeLegacyArgs(args []string) []string {
 	flagMap := map[string]string{

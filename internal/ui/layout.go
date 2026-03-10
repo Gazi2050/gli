@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/mattn/go-runewidth"
 	"golang.org/x/term"
 )
 
@@ -21,14 +22,15 @@ const (
 )
 
 type Styles struct {
-	Title   lipgloss.Style
-	Muted   lipgloss.Style
-	Text    lipgloss.Style
-	Hint    lipgloss.Style
-	Success lipgloss.Style
-	Warning lipgloss.Style
-	Error   lipgloss.Style
-	Accent  lipgloss.Style
+	Title     lipgloss.Style
+	Muted     lipgloss.Style
+	Text      lipgloss.Style
+	Hint      lipgloss.Style
+	Success   lipgloss.Style
+	Warning   lipgloss.Style
+	Error     lipgloss.Style
+	Accent    lipgloss.Style
+	Secondary lipgloss.Style
 }
 
 type spinnerDoneMsg struct{ err error }
@@ -36,14 +38,15 @@ type spinnerDoneMsg struct{ err error }
 func GetStyles() Styles {
 	t := GetCurrentTheme()
 	return Styles{
-		Title:   lipgloss.NewStyle().Bold(true).Foreground(t.Primary),
-		Muted:   lipgloss.NewStyle().Foreground(t.Muted),
-		Text:    lipgloss.NewStyle().Foreground(t.Text),
-		Hint:    lipgloss.NewStyle().Foreground(t.Muted),
-		Success: lipgloss.NewStyle().Bold(true).Foreground(t.Success),
-		Warning: lipgloss.NewStyle().Bold(true).Foreground(t.Warning),
-		Error:   lipgloss.NewStyle().Bold(true).Foreground(t.Error),
-		Accent:  lipgloss.NewStyle().Bold(true).Foreground(t.Primary),
+		Title:     lipgloss.NewStyle().Bold(true).Foreground(t.Primary),
+		Muted:     lipgloss.NewStyle().Foreground(t.Muted),
+		Text:      lipgloss.NewStyle().Foreground(t.Text),
+		Hint:      lipgloss.NewStyle().Foreground(t.Muted),
+		Success:   lipgloss.NewStyle().Bold(true).Foreground(t.Success),
+		Warning:   lipgloss.NewStyle().Bold(true).Foreground(t.Warning),
+		Error:     lipgloss.NewStyle().Bold(true).Foreground(t.Error),
+		Accent:    lipgloss.NewStyle().Bold(true).Foreground(t.Primary),
+		Secondary: lipgloss.NewStyle().Foreground(t.Secondary),
 	}
 }
 
@@ -57,14 +60,21 @@ func TerminalWidth() int {
 }
 
 func BoxWidthForTerminalWidth(terminalWidth int) int {
-	w := terminalWidth
-	// Leave some breathing room to avoid wrapping against terminal edges.
-	w = w - 4
-	if w < 50 {
-		w = 50
+	if terminalWidth <= 0 {
+		return 80
+	}
+	w := terminalWidth - 2
+	if w < 20 {
+		w = terminalWidth
 	}
 	if w > 100 {
 		w = 100
+	}
+	if w > terminalWidth {
+		w = terminalWidth
+	}
+	if w < 10 {
+		w = 10
 	}
 	return w
 }
@@ -103,8 +113,7 @@ func RenderBox(variant BoxVariant, title string, content string) string {
 		content = st.Title.Render(title) + "\n\n" + content
 	}
 
-	panel := box.Render(content)
-	return lipgloss.PlaceHorizontal(TerminalWidth(), lipgloss.Center, panel)
+	return box.Render(content)
 }
 
 func RenderInnerBox(variant BoxVariant, title string, content string) string {
@@ -250,15 +259,65 @@ func wrapLine(line string, width int) []string {
 	}
 
 	var out []string
-	cur := words[0]
-	for _, w := range words[1:] {
-		if lipgloss.Width(cur)+1+lipgloss.Width(w) <= width {
+	cur := ""
+	for _, w := range words {
+		if runewidth.StringWidth(w) > width {
+			if cur != "" {
+				out = append(out, cur)
+				cur = ""
+			}
+			out = append(out, splitWord(w, width)...)
+			continue
+		}
+		if cur == "" {
+			cur = w
+			continue
+		}
+		if runewidth.StringWidth(cur)+1+runewidth.StringWidth(w) <= width {
 			cur = cur + " " + w
 			continue
 		}
 		out = append(out, cur)
 		cur = w
 	}
-	out = append(out, cur)
+	if cur != "" {
+		out = append(out, cur)
+	}
 	return out
+}
+
+func splitWord(word string, width int) []string {
+	if width <= 0 {
+		return []string{word}
+	}
+	var out []string
+	var cur strings.Builder
+	curW := 0
+	for _, r := range word {
+		rw := runewidth.RuneWidth(r)
+		if curW+rw > width && curW > 0 {
+			out = append(out, cur.String())
+			cur.Reset()
+			curW = 0
+		}
+		cur.WriteRune(r)
+		curW += rw
+	}
+	if cur.Len() > 0 {
+		out = append(out, cur.String())
+	}
+	return out
+}
+
+func truncateToWidth(s string, width int) string {
+	if width <= 0 {
+		return ""
+	}
+	if runewidth.StringWidth(s) <= width {
+		return s
+	}
+	if width <= 1 {
+		return "…"
+	}
+	return runewidth.Truncate(s, width-1, "") + "…"
 }
