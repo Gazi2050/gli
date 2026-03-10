@@ -197,11 +197,11 @@ func (m HistoryModel) View() string {
 	case historyStateDone:
 		switch {
 		case m.errorMsg != "":
-			return MessageBox(BoxError, "History Update Failed", m.errorMsg)
+			return MessageBox(BoxError, "History Update Failed", m.errorMsg) + "\n"
 		case m.cancelled:
-			return MessageBox(BoxWarning, "Cancelled", "History update cancelled.")
+			return MessageBox(BoxWarning, "Cancelled", "History update cancelled.") + "\n"
 		default:
-			return MessageBox(BoxSuccess, "Success", m.successMsg)
+			return MessageBox(BoxSuccess, "Success", m.successMsg) + "\n"
 		}
 	}
 

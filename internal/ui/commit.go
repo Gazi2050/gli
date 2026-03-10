@@ -206,11 +206,11 @@ func (m CommitModel) View() string {
 	case commitStateDone:
 		switch {
 		case m.errorMsg != "":
-			return MessageBox(BoxError, "Commit Failed", m.errorMsg)
+			return MessageBox(BoxError, "Commit Failed", m.errorMsg) + "\n"
 		case m.cancelled:
-			return MessageBox(BoxWarning, "Cancelled", "Workflow cancelled.")
+			return MessageBox(BoxWarning, "Cancelled", "Workflow cancelled.") + "\n"
 		default:
-			return MessageBox(BoxSuccess, "Success", m.successMsg)
+			return MessageBox(BoxSuccess, "Success", m.successMsg) + "\n"
 		}
 	}
 
