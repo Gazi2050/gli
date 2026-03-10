@@ -145,10 +145,10 @@ func (m CommitModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.state = commitStateDone
 		if msg.Err != nil {
 			m.errorMsg = msg.Err.Error()
-			return m, nil
+			return m, tea.Quit
 		}
 		m.successMsg = "commit and push completed"
-		return m, nil
+		return m, tea.Quit
 	}
 
 	if m.state == commitStateEditing {
@@ -184,7 +184,7 @@ func (m CommitModel) View() string {
 			"",
 			menu,
 			"",
-			st.Hint.Render("Use ↑/↓ (or j/k) and Enter. Press q to cancel."),
+			st.Hint.Render("Use ↑/↓ and Enter. Press q to cancel."),
 		}, "\n")
 	case commitStateEditing:
 		content = strings.Join([]string{
@@ -201,11 +201,11 @@ func (m CommitModel) View() string {
 	case commitStateDone:
 		switch {
 		case m.errorMsg != "":
-			return MessageBox(BoxError, "Commit Failed", m.errorMsg+"\n\nPress q to exit")
+			return MessageBox(BoxError, "Commit Failed", m.errorMsg)
 		case m.cancelled:
-			return MessageBox(BoxWarning, "Cancelled", "Workflow cancelled.\n\nPress q to exit")
+			return MessageBox(BoxWarning, "Cancelled", "Workflow cancelled.")
 		default:
-			return MessageBox(BoxSuccess, "Success", m.successMsg+"\n\nPress q to exit")
+			return MessageBox(BoxSuccess, "Success", m.successMsg)
 		}
 	}
 
@@ -221,12 +221,12 @@ func (m CommitModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch m.state {
 	case commitStateShowingProposal:
 		switch msg.String() {
-		case "up", "k":
+		case "up":
 			if m.menuIndex > 0 {
 				m.menuIndex--
 			}
 			return m, nil
-		case "down", "j":
+		case "down":
 			if m.menuIndex < 3 {
 				m.menuIndex++
 			}
@@ -262,9 +262,7 @@ func (m CommitModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return m, cmd
 		}
 	case commitStateDone:
-		if msg.String() == "q" || msg.String() == "enter" {
-			return m, tea.Quit
-		}
+		return m, tea.Quit
 	}
 
 	return m, nil

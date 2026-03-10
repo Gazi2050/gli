@@ -109,10 +109,10 @@ func (m HistoryModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.state = historyStateDone
 		if msg.Err != nil {
 			m.errorMsg = msg.Err.Error()
-			return m, nil
+			return m, tea.Quit
 		}
 		m.successMsg = "history updated successfully"
-		return m, nil
+		return m, tea.Quit
 	}
 
 	return m, nil
@@ -192,11 +192,11 @@ func (m HistoryModel) View() string {
 	case historyStateDone:
 		switch {
 		case m.errorMsg != "":
-			return MessageBox(BoxError, "History Update Failed", m.errorMsg+"\n\nPress q to exit")
+			return MessageBox(BoxError, "History Update Failed", m.errorMsg)
 		case m.cancelled:
-			return MessageBox(BoxWarning, "Cancelled", "History update cancelled.\n\nPress q to exit")
+			return MessageBox(BoxWarning, "Cancelled", "History update cancelled.")
 		default:
-			return MessageBox(BoxSuccess, "Success", m.successMsg+"\n\nPress q to exit")
+			return MessageBox(BoxSuccess, "Success", m.successMsg)
 		}
 	}
 
@@ -345,9 +345,7 @@ func (m HistoryModel) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	case historyStateDone:
-		if msg.String() == "q" || msg.String() == "enter" {
-			return m, tea.Quit
-		}
+		return m, tea.Quit
 	}
 
 	return m, nil
