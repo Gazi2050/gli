@@ -16,3 +16,6 @@ Thumbs.db
 # Project Specific
 .env
 *.spec
+diny
+.opencode
+docs

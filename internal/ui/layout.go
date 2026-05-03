@@ -31,6 +31,7 @@ type Styles struct {
 	Error     lipgloss.Style
 	Accent    lipgloss.Style
 	Secondary lipgloss.Style
+	Dim       lipgloss.Style
 }
 
 type spinnerDoneMsg struct{ err error }
@@ -45,8 +46,9 @@ func GetStyles() Styles {
 		Success:   lipgloss.NewStyle().Bold(true).Foreground(t.Success),
 		Warning:   lipgloss.NewStyle().Bold(true).Foreground(t.Warning),
 		Error:     lipgloss.NewStyle().Bold(true).Foreground(t.Error),
-		Accent:    lipgloss.NewStyle().Bold(true).Foreground(t.Primary),
+		Accent:    lipgloss.NewStyle().Bold(true).Foreground(t.Accent),
 		Secondary: lipgloss.NewStyle().Foreground(t.Secondary),
+		Dim:       lipgloss.NewStyle().Foreground(t.Dim),
 	}
 }
 
@@ -84,7 +86,6 @@ func boxWidth() int {
 }
 
 func BoxInnerWidth() int {
-	// RenderBox uses border+padding that is roughly 6 columns total.
 	return boxWidth() - 6
 }
 
@@ -116,41 +117,9 @@ func RenderBox(variant BoxVariant, title string, content string) string {
 	return box.Render(content)
 }
 
-func RenderInnerBox(variant BoxVariant, title string, content string) string {
-	t := GetCurrentTheme()
-	st := GetStyles()
-
-	border := t.BorderPrimary
-	switch variant {
-	case BoxSuccess:
-		border = t.BorderSuccess
-	case BoxWarning:
-		border = t.BorderWarning
-	case BoxError:
-		border = t.BorderError
-	}
-
-	w := BoxInnerWidth()
-	if w < 30 {
-		w = 30
-	}
-
-	box := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(border).
-		Padding(1, 2).
-		Width(w)
-
-	if strings.TrimSpace(title) != "" {
-		content = st.Title.Render(title) + "\n\n" + content
-	}
-
-	return box.Render(content)
-}
-
 func MessageBox(variant BoxVariant, title, body string) string {
 	st := GetStyles()
-	body = wrapParagraphs(body, boxWidth()-6) // approximate: border+padding
+	body = wrapParagraphs(body, boxWidth()-6)
 	switch variant {
 	case BoxSuccess:
 		body = st.Success.Render(body)
@@ -174,7 +143,6 @@ func WithSpinner(message string, fn func() error) error {
 		return fmt.Errorf("fn cannot be nil")
 	}
 
-	// Non-TTY fallback: just run the function.
 	if !term.IsTerminal(int(os.Stdout.Fd())) {
 		if strings.TrimSpace(message) != "" {
 			fmt.Fprintln(os.Stdout, message)
@@ -197,7 +165,6 @@ func WithSpinner(message string, fn func() error) error {
 
 	finalModel, err := p.Run()
 	if err != nil {
-		// If Bubble Tea can't attach to TTY, still return the underlying result.
 		return <-resultCh
 	}
 
@@ -266,7 +233,7 @@ func wrapLine(line string, width int) []string {
 				out = append(out, cur)
 				cur = ""
 			}
-			out = append(out, splitWord(w, width)...)
+			out = append(out, w)
 			continue
 		}
 		if cur == "" {
@@ -286,38 +253,30 @@ func wrapLine(line string, width int) []string {
 	return out
 }
 
-func splitWord(word string, width int) []string {
-	if width <= 0 {
-		return []string{word}
-	}
-	var out []string
-	var cur strings.Builder
-	curW := 0
-	for _, r := range word {
-		rw := runewidth.RuneWidth(r)
-		if curW+rw > width && curW > 0 {
-			out = append(out, cur.String())
-			cur.Reset()
-			curW = 0
-		}
-		cur.WriteRune(r)
-		curW += rw
-	}
-	if cur.Len() > 0 {
-		out = append(out, cur.String())
-	}
-	return out
+func roundedBorderRunes() (tl, tr, bl, br, h, v, t, b, l, r, c string) {
+	return "╭", "╮", "╰", "╯", "─", "│", "┬", "┴", "├", "┤", "┼"
 }
 
-func truncateToWidth(s string, width int) string {
-	if width <= 0 {
-		return ""
+func clamp(v, lo, hi int) int {
+	if v < lo {
+		return lo
 	}
-	if runewidth.StringWidth(s) <= width {
-		return s
+	if v > hi {
+		return hi
 	}
-	if width <= 1 {
-		return "…"
+	return v
+}
+
+func minInt(a, b int) int {
+	if a < b {
+		return a
 	}
-	return runewidth.Truncate(s, width-1, "") + "…"
+	return b
+}
+
+func maxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }

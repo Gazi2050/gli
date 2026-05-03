@@ -17,16 +17,19 @@ func NewGitActions(core *GitCore) (*GitActions, error) {
 	return &GitActions{Core: core}, nil
 }
 
-func (g *GitActions) CommitAndPush(message string, noVerify bool) error {
-	if strings.TrimSpace(message) == "" {
-		return errors.New("commit message cannot be empty")
-	}
-
+func (g *GitActions) AddAll() error {
 	if _, stderr, err := g.Core.RunCommand("add", "."); err != nil {
 		if stderr != "" {
 			return fmt.Errorf("git add failed: %s", stderr)
 		}
 		return fmt.Errorf("git add failed: %w", err)
+	}
+	return nil
+}
+
+func (g *GitActions) CommitAndPush(message string, noVerify bool) error {
+	if strings.TrimSpace(message) == "" {
+		return errors.New("commit message cannot be empty")
 	}
 
 	commitArgs := []string{"commit", "-m", message}
@@ -40,6 +43,10 @@ func (g *GitActions) CommitAndPush(message string, noVerify bool) error {
 		return fmt.Errorf("git commit failed: %w", err)
 	}
 
+	return g.Push(noVerify)
+}
+
+func (g *GitActions) Push(noVerify bool) error {
 	hasUpstream, err := g.hasUpstream()
 	if err != nil {
 		return err
@@ -79,47 +86,42 @@ func (g *GitActions) CommitAndPush(message string, noVerify bool) error {
 	return nil
 }
 
-func (g *GitActions) ResetCommit(mode string) error {
-	mode = strings.TrimSpace(mode)
-	if mode != "soft" && mode != "hard" {
-		return fmt.Errorf("invalid reset mode %q: expected soft or hard", mode)
-	}
-
-	if _, stderr, err := g.Core.RunCommand("reset", "--"+mode, "HEAD~1"); err != nil {
-		if stderr != "" {
-			return fmt.Errorf("git reset --%s HEAD~1 failed: %s", mode, stderr)
-		}
-		return fmt.Errorf("git reset --%s HEAD~1 failed: %w", mode, err)
-	}
-
-	return nil
-}
-
-func (g *GitActions) SwitchBranch(name string, pushToRemote bool) error {
+func (g *GitActions) CreateBranch(name string) error {
 	name = strings.TrimSpace(name)
 	if name == "" {
 		return errors.New("branch name cannot be empty")
 	}
-
-	if _, stderr, err := g.Core.RunCommand("checkout", "-b", name); err != nil {
+	if _, stderr, err := g.Core.RunCommand("switch", "-c", name); err != nil {
 		if stderr != "" {
-			return fmt.Errorf("git checkout -b %s failed: %s", name, stderr)
+			return fmt.Errorf("git switch -c %s failed: %s", name, stderr)
 		}
-		return fmt.Errorf("git checkout -b %s failed: %w", name, err)
+		return fmt.Errorf("git switch -c %s failed: %w", name, err)
 	}
-
-	if !pushToRemote {
-		return nil
-	}
-
 	if _, stderr, err := g.Core.RunCommand("push", "-u", "origin", name); err != nil {
 		if stderr != "" {
 			return fmt.Errorf("git push -u origin %s failed: %s", name, stderr)
 		}
 		return fmt.Errorf("git push -u origin %s failed: %w", name, err)
 	}
-
 	return nil
+}
+
+func (g *GitActions) SwitchBranch(name string) error {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return errors.New("branch name cannot be empty")
+	}
+	if _, stderr, err := g.Core.RunCommand("switch", name); err != nil {
+		if stderr != "" {
+			return fmt.Errorf("git switch %s failed: %s", name, stderr)
+		}
+		return fmt.Errorf("git switch %s failed: %w", name, err)
+	}
+	return nil
+}
+
+func (g *GitActions) HasUpstream() (bool, error) {
+	return g.hasUpstream()
 }
 
 func (g *GitActions) hasUpstream() (bool, error) {

@@ -28,6 +28,9 @@ type Theme struct {
 	BorderSuccess   lipgloss.Color
 	BorderWarning   lipgloss.Color
 	BorderError     lipgloss.Color
+
+	Accent lipgloss.Color
+	Dim    lipgloss.Color
 }
 
 var themes = map[string]*Theme{
@@ -44,11 +47,34 @@ var themes = map[string]*Theme{
 		WarningBg:       lipgloss.Color("#11111B"),
 		Error:           lipgloss.Color("#F38BA8"),
 		ErrorBg:         lipgloss.Color("#11111B"),
-		BorderPrimary:   lipgloss.Color("#585B70"),
-		BorderSecondary: lipgloss.Color("#CBA6F7"),
+		BorderPrimary:   lipgloss.Color("#45475A"),
+		BorderSecondary: lipgloss.Color("#9399B2"),
 		BorderSuccess:   lipgloss.Color("#A6E3A1"),
 		BorderWarning:   lipgloss.Color("#F9E2AF"),
 		BorderError:     lipgloss.Color("#F38BA8"),
+		Accent:          lipgloss.Color("#F5C2E7"),
+		Dim:             lipgloss.Color("#313244"),
+	},
+	"night": {
+		Name:            "night",
+		Primary:         lipgloss.Color("#7AA2F7"),
+		PrimaryBg:       lipgloss.Color("#1A1B26"),
+		Secondary:       lipgloss.Color("#BB9AF7"),
+		Muted:           lipgloss.Color("#565F89"),
+		Text:            lipgloss.Color("#C0CAF5"),
+		Success:         lipgloss.Color("#9ECE6A"),
+		SuccessBg:       lipgloss.Color("#1A1B26"),
+		Warning:         lipgloss.Color("#E0AF68"),
+		WarningBg:       lipgloss.Color("#1A1B26"),
+		Error:           lipgloss.Color("#F7768E"),
+		ErrorBg:         lipgloss.Color("#1A1B26"),
+		BorderPrimary:   lipgloss.Color("#3B4261"),
+		BorderSecondary: lipgloss.Color("#7AA2F7"),
+		BorderSuccess:   lipgloss.Color("#9ECE6A"),
+		BorderWarning:   lipgloss.Color("#E0AF68"),
+		BorderError:     lipgloss.Color("#F7768E"),
+		Accent:          lipgloss.Color("#FF9E64"),
+		Dim:             lipgloss.Color("#292E42"),
 	},
 	"minimal": {
 		Name:            "minimal",
@@ -68,6 +94,8 @@ var themes = map[string]*Theme{
 		BorderSuccess:   lipgloss.Color("2"),
 		BorderWarning:   lipgloss.Color("3"),
 		BorderError:     lipgloss.Color("1"),
+		Accent:          lipgloss.Color("6"),
+		Dim:             lipgloss.Color("0"),
 	},
 }
 
@@ -92,15 +120,10 @@ func GetCurrentTheme() *Theme {
 	return themes["catppuccin"]
 }
 
-func GetTheme(name string) (*Theme, bool) {
-	name = strings.TrimSpace(strings.ToLower(name))
-	if name == "" {
-		return nil, false
-	}
-	t, ok := themes[name]
-	return t, ok
-}
-
 func GetAvailableThemes() []string {
-	return []string{currentThemeName}
+	names := make([]string, 0, len(themes))
+	for k := range themes {
+		names = append(names, k)
+	}
+	return names
 }

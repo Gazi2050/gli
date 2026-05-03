@@ -2,119 +2,111 @@ package api
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
 )
 
-const encodedAIEndpoint = "aHR0cHM6Ly9kaW55LWNsaS52ZXJjZWwuYXBwL2FwaS92Mi9jb21taXQ="
+const baseURL = "https://diny-cli.vercel.app"
+
+var conventionalTypes = []string{"feat", "fix", "docs", "style", "refactor", "perf", "test", "build", "ci", "chore", "revert"}
+
+var conventionalPattern = regexp.MustCompile(`^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?:\s.+`)
 
 type AIService struct {
-	Client   *http.Client
-	Endpoint string
+	Client *http.Client
 }
 
-type AIRequest struct {
-	GitDiff  string   `json:"gitDiff"`
-	Version  string   `json:"version"`
-	Name     string   `json:"name"`
-	RepoName string   `json:"repoName"`
-	System   string   `json:"system"`
-	Config   AIConfig `json:"config"`
+type dinyRequest struct {
+	Type       string      `json:"type"`
+	UserPrompt string      `json:"userPrompt"`
+	Config     dinyConfig  `json:"config"`
+	Version    string      `json:"version"`
+	Name       string      `json:"name"`
+	Email      string      `json:"email"`
+	RepoName   string      `json:"repoName"`
+	System     string      `json:"system"`
 }
 
-type AIConfig struct {
-	Theme  string         `json:"Theme"`
-	Commit AICommitConfig `json:"Commit"`
+type dinyConfig struct {
+	Theme    string          `json:"Theme"`
+	Commit   dinyCommitCfg   `json:"Request"`
+	Prompts  dinyPromptsCfg  `json:"Prompts"`
 }
 
-type AICommitConfig struct {
-	Conventional       bool              `json:"Conventional"`
-	ConventionalFormat []string          `json:"ConventionalFormat"`
-	Emoji              bool              `json:"Emoji"`
-	EmojiMap           map[string]string `json:"EmojiMap"`
-	Tone               string            `json:"Tone"`
-	Length             string            `json:"Length"`
-	CustomInstructions string            `json:"CustomInstructions"`
-	HashAfterCommit    bool              `json:"HashAfterCommit"`
+type dinyCommitCfg struct {
+	Conventional       bool   `json:"Conventional"`
+	Emoji              bool   `json:"Emoji"`
+	Tone               string `json:"Tone"`
+	Length             string `json:"Length"`
+	CustomInstructions string `json:"CustomInstructions"`
+	HashAfterCommit    bool   `json:"HashAfterCommit"`
 }
 
-type AIResponse struct {
-	Data AIResponseData `json:"data"`
+type dinyPromptsCfg struct {
+	Enabled bool `json:"enabled"`
 }
 
-type AIResponseData struct {
-	CommitMessage string `json:"commitMessage"`
+type dinyResponse struct {
+	Error *string        `json:"error,omitempty"`
+	Data  *dinyRespData  `json:"data,omitempty"`
+}
+
+type dinyRespData struct {
+	Message string `json:"message"`
 }
 
 func NewAIService(client *http.Client) (*AIService, error) {
-	endpoint, err := decodeEndpoint(encodedAIEndpoint)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode AI endpoint: %w", err)
-	}
-
 	if client == nil {
-		client = &http.Client{Timeout: 30 * time.Second}
+		client = &http.Client{Timeout: 60 * time.Second}
 	}
-
-	return &AIService{Client: client, Endpoint: endpoint}, nil
+	return &AIService{Client: client}, nil
 }
 
 func (s *AIService) GenerateCommitMessage(diff, username, repoName, customInstructions string) (string, error) {
 	if s.Client == nil {
-		s.Client = &http.Client{Timeout: 30 * time.Second}
-	}
-	if strings.TrimSpace(s.Endpoint) == "" {
-		endpoint, err := decodeEndpoint(encodedAIEndpoint)
-		if err != nil {
-			return "", fmt.Errorf("failed to decode AI endpoint: %w", err)
-		}
-		s.Endpoint = endpoint
+		s.Client = &http.Client{Timeout: 60 * time.Second}
 	}
 
-	payload := AIRequest{
-		GitDiff:  diff,
-		Version:  "v1.0.0",
-		Name:     username,
-		RepoName: repoName,
-		System:   runtime.GOOS,
-		Config: AIConfig{
+	instructions := "You MUST output ONLY a Conventional Commit message in the exact format: <type>[optional scope]: <description>. Allowed types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert. No explanation, no markdown, no quotes, no backticks. Just the commit message."
+	if customInstructions != "" {
+		instructions += " " + customInstructions
+	}
+
+	payload := dinyRequest{
+		Type:       "commit",
+		UserPrompt: diff,
+		Version:    "v1.0.0",
+		Name:       username,
+		RepoName:   repoName,
+		System:     runtime.GOOS,
+		Config: dinyConfig{
 			Theme: "catppuccin",
-			Commit: AICommitConfig{
+			Commit: dinyCommitCfg{
 				Conventional:       true,
-				ConventionalFormat: []string{"feat", "fix", "docs", "chore", "style", "refactor", "test", "perf"},
 				Emoji:              false,
-				EmojiMap: map[string]string{
-					"feat":     "🚀",
-					"fix":      "🐛",
-					"docs":     "📚",
-					"style":    "🎨",
-					"refactor": "♻️",
-					"test":     "✅",
-					"chore":    "🔧",
-					"perf":     "⚡",
-				},
 				Tone:               "casual",
 				Length:             "short",
-				CustomInstructions: customInstructions,
+				CustomInstructions: instructions,
 				HashAfterCommit:    false,
 			},
+			Prompts: dinyPromptsCfg{Enabled: false},
 		},
 	}
 
 	body, err := json.Marshal(payload)
 	if err != nil {
-		return "", fmt.Errorf("failed to encode AI request: %w", err)
+		return "", fmt.Errorf("failed to encode request: %w", err)
 	}
 
-	req, err := http.NewRequest(http.MethodPost, s.Endpoint, bytes.NewReader(body))
+	req, err := http.NewRequest(http.MethodPost, baseURL+"/api/requests", bytes.NewReader(body))
 	if err != nil {
-		return "", fmt.Errorf("failed to create AI request: %w", err)
+		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 
@@ -126,32 +118,62 @@ func (s *AIService) GenerateCommitMessage(diff, username, repoName, customInstru
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("failed to read AI response: %w", err)
+		return "", fmt.Errorf("failed to read response: %w", err)
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return "", fmt.Errorf("AI service returned status %d: %s", resp.StatusCode, truncate(string(respBody), 300))
 	}
 
-	var parsed AIResponse
+	var parsed dinyResponse
 	if err := json.Unmarshal(respBody, &parsed); err != nil {
-		return "", fmt.Errorf("failed to parse AI response: %w", err)
+		return "", fmt.Errorf("failed to parse response: %w", err)
 	}
 
-	message := strings.TrimSpace(parsed.Data.CommitMessage)
+	if parsed.Error != nil {
+		return "", fmt.Errorf("AI service error: %s", *parsed.Error)
+	}
+
+	if parsed.Data == nil {
+		return "", fmt.Errorf("no data in AI response")
+	}
+
+	message := cleanMessage(parsed.Data.Message)
 	if message == "" {
 		return "", fmt.Errorf("AI response missing commit message")
+	}
+
+	if !conventionalPattern.MatchString(message) {
+		message = enforceConventional(message)
 	}
 
 	return message, nil
 }
 
-func decodeEndpoint(encoded string) (string, error) {
-	decoded, err := base64.StdEncoding.DecodeString(encoded)
-	if err != nil {
-		return "", err
+func cleanMessage(raw string) string {
+	s := strings.TrimSpace(raw)
+	s = strings.TrimPrefix(s, "`")
+	s = strings.TrimSuffix(s, "`")
+	s = strings.Trim(s, "\"'")
+	return strings.TrimSpace(s)
+}
+
+func enforceConventional(msg string) string {
+	msg = strings.TrimSpace(msg)
+	lines := strings.SplitN(msg, "\n", 2)
+	first := strings.TrimSpace(lines[0])
+
+	lower := strings.ToLower(first)
+	for _, t := range conventionalTypes {
+		if strings.HasPrefix(lower, t+":") || strings.HasPrefix(lower, t+"(") {
+			return msg
+		}
 	}
-	return string(decoded), nil
+
+	if lower != "" {
+		return "chore: " + first
+	}
+	return msg
 }
 
 func truncate(s string, max int) string {
