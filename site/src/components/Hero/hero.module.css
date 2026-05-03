@@ -1,0 +1,73 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.button {
+  height: 40px;
+  border-radius: 6px;
+  border: none;
+  background: var(--gray3);
+  padding: 0 30px;
+  font-weight: 600;
+  flex-shrink: 0;
+  font-family: inherit;
+  box-shadow: 0px 0px 0px 1px rgba(255, 255, 255, 0.06),
+    0px 1px 0px 0px rgba(255, 255, 255, 0.08),
+    0px 2px 2px 0px rgba(255, 255, 255, 0.04);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--gray12);
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 200ms, background 200ms;
+  width: 152px;
+}
+
+.button[data-primary] {
+  background: var(--gray12);
+  color: var(--gray1);
+}
+
+.button:focus-visible {
+  outline: none;
+  box-shadow: 0px 0px 0px 1px rgba(255, 255, 255, 0.06),
+    0px 1px 0px 0px rgba(255, 255, 255, 0.08),
+    0px 2px 2px 0px rgba(255, 255, 255, 0.04),
+    0 0 0 2px rgba(255, 255, 255, 0.15);
+}
+
+.button:hover:not([data-primary]) {
+  background: var(--gray4);
+}
+
+.button[data-primary]:hover {
+  background: var(--gray11);
+}
+
+.heading {
+  font-size: 48px;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.wrapper p {
+  margin-bottom: 12px;
+}
+
+.link {
+  color: var(--gray11) !important;
+  font-size: 14px;
+  text-decoration: underline;
+}

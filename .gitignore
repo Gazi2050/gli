@@ -5,6 +5,23 @@
 *.out
 coverage/
 
+# Site (Next.js / Fumadocs)
+site/node_modules
+site/.source
+site/.next/
+site/out/
+site/build
+site/*.tsbuildinfo
+site/.env*.local
+site/.vercel
+site/next-env.d.ts
+site/.pnp
+site/.pnp.js
+site/npm-debug.log*
+site/yarn-debug.log*
+site/yarn-error.log*
+site/coverage
+
 # IDE & OS
 .vscode/
 .idea/
@@ -12,10 +29,8 @@ coverage/
 *.swo
 .DS_Store
 Thumbs.db
+*.pem
 
 # Project Specific
 .env
 *.spec
-diny
-.opencode
-docs

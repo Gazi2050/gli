@@ -1,0 +1,80 @@
+import { Tab, Tabs, Steps } from 'nextra-theme-docs';
+
+# Getting Started
+
+**gli** is a lightweight CLI that makes Git operations faster and smarter. Five commands, AI-powered commits, no config needed.
+
+AI commit messages are powered by the [diny](https://diny.run/) API — no API key needed.
+
+<Steps>
+### Download
+
+Download the standalone binary for your OS from the [Latest Release](https://github.com/Gazi2050/gli/releases).
+
+Binaries follow the naming pattern `gli_vX.Y.Z_os_arch` (e.g. `gli_v0.0.7_linux_amd64`).
+
+### Install
+
+<Tabs items={['Linux', 'macOS', 'Windows']}>
+  <Tab>
+    ```bash
+    tar xzf gli_v0.0.7_linux_amd64.tar.gz
+    sudo mv gli /usr/local/bin/gli
+    sudo chmod +x /usr/local/bin/gli
+    ```
+
+    **Uninstall**
+    ```bash
+    sudo rm /usr/local/bin/gli
+    ```
+  </Tab>
+  <Tab>
+    ```bash
+    tar xzf gli_v0.0.7_darwin_amd64.tar.gz
+    sudo mv gli /usr/local/bin/gli
+    sudo chmod +x /usr/local/bin/gli
+    ```
+
+    **Uninstall**
+    ```bash
+    sudo rm /usr/local/bin/gli
+    ```
+  </Tab>
+  <Tab>
+    Extract `gli_v0.0.7_windows_amd64.zip`, then move `gli.exe`:
+
+    ```powershell
+    move gli.exe C:\Windows\System32\
+    ```
+
+    **Uninstall**
+    ```powershell
+    del C:\Windows\System32\gli.exe
+    ```
+  </Tab>
+</Tabs>
+
+### Verify
+
+```bash
+gli --version
+```
+
+</Steps>
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `gli commit` | AI-powered commit messages |
+| `gli branch -c <name>` | Create a branch and push it |
+| `gli branch -s <name>` | Switch to an existing branch |
+| `gli me` | Show your GitHub profile |
+| `gli profile <user>` | Show any GitHub profile |
+
+## Global Flags
+
+- **`-v, --version`** — Show the installed version.
+- **`--help`** — Display the full help menu.
+
+Type **`gli`** with no arguments to see the command overview at any time.
