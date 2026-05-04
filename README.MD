@@ -9,7 +9,7 @@
 </pre>
 </p>
 
-<p align="center"><strong>$git wrapper for humans</strong></p>
+<p align="center"><strong>`$ git wrapper for humans`</strong></p>
 
 gli is a lightweight, powerful CLI tool designed to make Git operations faster, smarter, and more intuitive. It combines essential Git commands with AI-powered enhancements and useful developer utilities.
 
@@ -66,20 +66,33 @@ del C:\Windows\System32\gli.exe
 
 ## Features
 
-| Feature | Description |
-| --- | --- |
-| AI Commit Assistant | Stages all changes, generates an AI commit message, and pushes through a single TUI flow. |
-| Branch Management | Quickly create branches with upstream tracking or switch branches via concise flags. |
-| Profile Lookup | Display your GitHub profile (`gli me`) or any user (`gli profile <user>`) without leaving the terminal. |
+### AI Commit Assistant
+Stages all changes, generates an AI commit message, and pushes through a single TUI workflow.
+
+**Command:** `gli commit`
+
+### Branch Management
+Quickly create branches with upstream tracking or switch branches using concise flags.
+
+**Commands:** 
+- `gli branch -c <name>` — Create branch and push with upstream
+- `gli branch -s <name>` — Switch to existing branch
+
+### Profile Lookup
+Display your GitHub profile or any user's profile directly in the terminal.
+
+**Commands:**
+- `gli me` — Show your GitHub profile
+- `gli profile <username>` — Show any GitHub user profile
 
 ## Command Cheatsheet
 
-| Command | What it does |
-| --- | --- |
-| `gli commit` | Stage every change, generate an AI commit message, and push (supports `--no-verify`). |
-| `gli branch -c <name>` | Create a new branch, switch to it, and push with upstream tracking in one step. |
-| `gli branch -s <name>` | Switch to an existing branch using a concise flag. |
-| `gli me` | Show the GitHub profile detected from your local git config. |
-| `gli profile <username>` | Display any GitHub user's profile directly in the terminal. |
+| Command                  | What it does                                                                          |
+| ------------------------ | ------------------------------------------------------------------------------------- |
+| `gli commit`             | Stage every change, generate an AI commit message, and push (supports `--no-verify`). |
+| `gli branch -c <name>`   | Create a new branch, switch to it, and push with upstream tracking in one step.       |
+| `gli branch -s <name>`   | Switch to an existing branch using a concise flag.                                    |
+| `gli me`                 | Show the GitHub profile detected from your local git config.                          |
+| `gli profile <username>` | Display any GitHub user's profile directly in the terminal.                           |
 
 <p align="center">Made with ❤️ for Git users</p>
