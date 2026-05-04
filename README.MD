@@ -17,9 +17,9 @@ gli is a lightweight, powerful CLI tool designed to make Git operations faster, 
 
 | Platform | Install | Uninstall |
 | --- | --- | --- |
-| Linux | <pre><code>sudo mv gli /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli</code></pre> | <pre><code>sudo rm /usr/local/bin/gli</code></pre> |
-| macOS | <pre><code>sudo mv gli-mac /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli</code></pre> | <pre><code>sudo rm /usr/local/bin/gli</code></pre> |
-| Windows (CMD admin) | <pre><code>move gli.exe C:\Windows\System32\</code></pre> | <pre><code>del C:\Windows\System32\gli.exe</code></pre> |
+| Linux | `sudo mv gli /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli` | `sudo rm /usr/local/bin/gli` |
+| macOS | `sudo mv gli-mac /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli` | `sudo rm /usr/local/bin/gli` |
+| Windows (CMD admin) | `move gli.exe C:\Windows\System32\` | `del C:\Windows\System32\gli.exe` |
 
 Grab the right binary from the [latest release](https://github.com/Gazi2050/gli/releases) and follow the platform-specific steps above.
 
