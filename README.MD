@@ -11,7 +11,7 @@
 
 <p align="center"><strong>$ git wrapper for humans</strong></p>
 
-gli is a lightweight, powerful CLI tool designed to make Git operations faster, smarter, and more intuitive. It combines essential Git commands with AI-powered enhancements and useful developer utilities.
+gli is a CLI tool that makes Git simpler. Generate commit messages with AI, manage branches, and look up GitHub profiles — right from your terminal.
 
 ## Table of Contents
 
