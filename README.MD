@@ -70,7 +70,8 @@ del C:\Windows\System32\gli.exe
 
 Stages all changes, generates an AI commit message, and pushes through a single TUI workflow.
 
-> **Command:** `gli commit`  
+> **Commands:**  
+> - `gli commit` — Stage changes, generate AI commit message, and push  
 > - `gli commit --no-verify` — Skip git hooks
 
 ### Branch Management
