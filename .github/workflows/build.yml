@@ -3,6 +3,11 @@ name: Build & Release Binaries
 on:
   push:
     branches: ["main"]
+    paths:
+      - "cmd/**"
+      - "internal/**"
+      - "go.mod"
+      - "go.sum"
   workflow_dispatch:
 
 permissions:
