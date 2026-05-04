@@ -9,7 +9,7 @@
 </pre>
 </p>
 
-<p align="center"><strong>$ git wrapper for humans</strong></p>
+<p align="center"><strong>$git wrapper for humans</strong></p>
 
 gli is a CLI tool that makes Git simpler. Generate commit messages with AI, manage branches, and look up GitHub profiles — right from your terminal.
 
@@ -17,10 +17,13 @@ gli is a CLI tool that makes Git simpler. Generate commit messages with AI, mana
 
 - [Installation](#installation)
 - [Features](#features)
+- [Command Cheatsheet](#command-cheatsheet)
 
 ## Installation
 
 Download the appropriate binary from the [latest release](https://github.com/Gazi2050/gli/releases), extract it, then follow the commands below for your platform.
+
+Use `<version>` as the release tag (for example `v0.0.8`).
 
 ---
 
@@ -29,16 +32,25 @@ Download the appropriate binary from the [latest release](https://github.com/Gaz
 **Install (amd64)**
 
 ```bash
-sudo mv gli_v0.0.8_linux_amd64 /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli
+sudo mv gli_<version>_linux_amd64 /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli
 ```
 
 **Install (arm64)**
 
 ```bash
-sudo mv gli_v0.0.8_linux_arm64 /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli
+sudo mv gli_<version>_linux_arm64 /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli
 ```
 
-**Verify** — `gli version`
+**Checksum (recommended)**
+
+```bash
+sha256sum gli_<version>_linux_amd64
+sha256sum gli_<version>_linux_arm64
+```
+
+Compare output with `checksums.txt` from the release.
+
+**Verify install** — `gli version`
 
 **Uninstall**
 
@@ -53,16 +65,25 @@ sudo rm /usr/local/bin/gli
 **Install (amd64)**
 
 ```bash
-sudo mv gli_v0.0.8_darwin_amd64 /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli
+sudo mv gli_<version>_darwin_amd64 /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli
 ```
 
 **Install (arm64)**
 
 ```bash
-sudo mv gli_v0.0.8_darwin_arm64 /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli
+sudo mv gli_<version>_darwin_arm64 /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli
 ```
 
-**Verify** — `gli version`
+**Checksum (recommended)**
+
+```bash
+shasum -a 256 gli_<version>_darwin_amd64
+shasum -a 256 gli_<version>_darwin_arm64
+```
+
+Compare output with `checksums.txt` from the release.
+
+**Verify install** — `gli version`
 
 **Uninstall**
 
@@ -77,16 +98,25 @@ sudo rm /usr/local/bin/gli
 **Install (amd64)**
 
 ```cmd
-move gli_v0.0.8_windows_amd64.exe C:\Windows\System32\gli.exe
+move gli_<version>_windows_amd64.exe C:\Windows\System32\gli.exe
 ```
 
 **Install (arm64)**
 
 ```cmd
-move gli_v0.0.8_windows_arm64.exe C:\Windows\System32\gli.exe
+move gli_<version>_windows_arm64.exe C:\Windows\System32\gli.exe
 ```
 
-**Verify** — `gli version`
+**Checksum (recommended)**
+
+```cmd
+CertUtil -hashfile gli_<version>_windows_amd64.exe SHA256
+CertUtil -hashfile gli_<version>_windows_arm64.exe SHA256
+```
+
+Compare output with `checksums.txt` from the release.
+
+**Verify install** — `gli version`
 
 **Uninstall**
 
