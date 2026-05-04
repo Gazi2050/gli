@@ -66,32 +66,28 @@ del C:\Windows\System32\gli.exe
 
 ## Features
 
----
-
 ### AI Commit Assistant
 
 Stages all changes, generates an AI commit message, and pushes through a single TUI workflow.
 
 > **Command:** `gli commit`
 
----
-
 ### Branch Management
 
 Quickly create branches with upstream tracking or switch branches using concise flags.
 
-> **Commands:**  
-> - `gli branch -c <name>` — Create branch and push with upstream  
+> **Commands:**
+>
+> - `gli branch -c <name>` — Create branch and push with upstream
 > - `gli branch -s <name>` — Switch to existing branch
-
----
 
 ### Profile Lookup
 
 Display your GitHub profile or any user's profile directly in the terminal.
 
-> **Commands:**  
-> - `gli me` — Show your GitHub profile  
+> **Commands:**
+>
+> - `gli me` — Show your GitHub profile
 > - `gli profile <username>` — Show any GitHub user profile
 
 ## Command Cheatsheet
