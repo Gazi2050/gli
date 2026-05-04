@@ -32,8 +32,6 @@ Download the appropriate binary from the [latest release](https://github.com/Gaz
 sudo mv gli_v0.0.8_linux_amd64 /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli
 ```
 
-**Verify** — `gli version`
-
 **Install (arm64)**
 
 ```bash
