@@ -13,15 +13,56 @@
 
 gli is a lightweight, powerful CLI tool designed to make Git operations faster, smarter, and more intuitive. It combines essential Git commands with AI-powered enhancements and useful developer utilities.
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Features](#features)
+
 ## Installation
 
-| Platform            | Install                                                                  | Uninstall                         |
-| ------------------- | ------------------------------------------------------------------------ | --------------------------------- |
-| Linux               | `sudo mv gli /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli`     | `sudo rm /usr/local/bin/gli`      |
-| macOS               | `sudo mv gli-mac /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli` | `sudo rm /usr/local/bin/gli`      |
-| Windows (CMD admin) | `move gli.exe C:\Windows\System32\`                                      | `del C:\Windows\System32\gli.exe` |
+Grab the appropriate binary from the [latest release](https://github.com/Gazi2050/gli/releases) and follow the commands below for your platform.
 
-Grab the right binary from the [latest release](https://github.com/Gazi2050/gli/releases) and follow the platform-specific steps above.
+### Linux
+
+**Install**
+
+```bash
+sudo mv gli /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli
+```
+
+**Uninstall**
+
+```bash
+sudo rm /usr/local/bin/gli
+```
+
+### macOS
+
+**Install**
+
+```bash
+sudo mv gli-mac /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli
+```
+
+**Uninstall**
+
+```bash
+sudo rm /usr/local/bin/gli
+```
+
+### Windows (CMD as Admin)
+
+**Install**
+
+```cmd
+move gli.exe C:\Windows\System32\
+```
+
+**Uninstall**
+
+```cmd
+del C:\Windows\System32\gli.exe
+```
 
 ## Features
 
