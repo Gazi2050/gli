@@ -20,46 +20,61 @@ gli is a lightweight, powerful CLI tool designed to make Git operations faster, 
 
 ## Installation
 
-Grab the appropriate binary from the [latest release](https://github.com/Gazi2050/gli/releases) and follow the commands below for your platform.
+Download the appropriate binary from the [latest release](https://github.com/Gazi2050/gli/releases), extract it, then follow the commands below for your platform.
+
+---
 
 ### Linux
 
-**Install**
-
+**Install (amd64)**
 ```bash
-sudo mv gli /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli
+sudo mv gli_v0.0.8_linux_amd64 /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli
+```
+
+**Install (arm64)**
+```bash
+sudo mv gli_v0.0.8_linux_arm64 /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli
 ```
 
 **Uninstall**
-
 ```bash
 sudo rm /usr/local/bin/gli
 ```
+
+---
 
 ### macOS
 
-**Install**
-
+**Install (amd64)**
 ```bash
-sudo mv gli-mac /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli
+sudo mv gli_v0.0.8_darwin_amd64 /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli
+```
+
+**Install (arm64)**
+```bash
+sudo mv gli_v0.0.8_darwin_arm64 /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli
 ```
 
 **Uninstall**
-
 ```bash
 sudo rm /usr/local/bin/gli
 ```
 
+---
+
 ### Windows (CMD as Admin)
 
-**Install**
-
+**Install (amd64)**
 ```cmd
-move gli.exe C:\Windows\System32\
+move gli_v0.0.8_windows_amd64.exe C:\Windows\System32\gli.exe
+```
+
+**Install (arm64)**
+```cmd
+move gli_v0.0.8_windows_arm64.exe C:\Windows\System32\gli.exe
 ```
 
 **Uninstall**
-
 ```cmd
 del C:\Windows\System32\gli.exe
 ```
