@@ -164,10 +164,6 @@ type deps struct {
 func buildDeps() (*deps, error) {
 	core := gitpkg.NewGitCore("")
 
-	if themeName, err := core.GetConfig("gli.theme"); err == nil {
-		_ = ui.SetTheme(themeName)
-	}
-
 	actions, err := gitpkg.NewGitActions(core)
 	if err != nil {
 		return nil, err

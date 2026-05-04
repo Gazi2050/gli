@@ -1,0 +1,11 @@
+{
+  "title": "gli",
+  "description": "Modern Git Wrapper",
+  "pages": [
+    "index",
+    "install",
+    "commit",
+    "branch",
+    "profile"
+  ]
+}
