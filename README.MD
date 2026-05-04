@@ -9,7 +9,7 @@
 </pre>
 </p>
 
-<p align="center"><strong>$git wrapper for humans</strong></p>
+<p align="center"><strong>git wrapper for humans</strong></p>
 
 gli is a CLI tool that makes Git simpler. Generate commit messages with AI, manage branches, and look up GitHub profiles — right from your terminal.
 
