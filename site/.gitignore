@@ -1,30 +1,37 @@
-# deps
-/node_modules
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
 
-# generated content
-.contentlayer
-.content-collections
-.source
+# Node dependencies
+node_modules
 
-# test & build
-/coverage
-/.next/
-/out/
-/build
-*.tsbuildinfo
+# Logs
+logs
+*.log
 
-# misc
+# Misc
 .DS_Store
-*.pem
-/.pnp
-.pnp.js
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+.fleet
+.idea
+.eslintcache
 
-# others
-.env*.local
-.vercel
-next-env.d.ts
-
+# Local env files
 .env
+.env.*
+!.env.example
+
+# npm pack
+*.tgz
+
+# Temp files
+.tmp
+.profile
+*.0x
+
+#VSC
+.history
+.wrangler
