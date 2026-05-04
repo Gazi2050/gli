@@ -1,12 +1,26 @@
-![gli-terminal-look](https://ik.imagekit.io/uc8ejfj1j/drop-folder/Screenshot_from_2026-02-16_00-13-10_WAmnWrF0F.png)
-**A modern Git wrapper that simplifies developer workflows.**
+<p align="center">
+<pre>
+                    ██████╗ ██╗     ██╗
+                   ██╔════╝ ██║     ██║
+                   ██║  ███╗██║     ██║
+                   ██║   ██║██║     ██║
+                   ╚██████╔╝███████╗██║
+                    ╚═════╝ ╚══════╝╚═╝
+</pre>
+</p>
+
+<p align="center"><strong>$git wrapper for humans</strong></p>
 
 gli is a lightweight, powerful CLI tool designed to make Git operations faster, smarter, and more intuitive. It combines essential Git commands with AI-powered enhancements and useful developer utilities.
 
 ## Installation
 
-**Download** the binary for your OS from [Latest Release](https://github.com/Gazi2050/gli/releases)
+| Platform | Install | Uninstall |
+| --- | --- | --- |
+| Linux | <pre><code>sudo mv gli /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli</code></pre> | <pre><code>sudo rm /usr/local/bin/gli</code></pre> |
+| macOS | <pre><code>sudo mv gli-mac /usr/local/bin/gli && sudo chmod +x /usr/local/bin/gli</code></pre> | <pre><code>sudo rm /usr/local/bin/gli</code></pre> |
+| Windows (CMD admin) | <pre><code>move gli.exe C:\Windows\System32\</code></pre> | <pre><code>del C:\Windows\System32\gli.exe</code></pre> |
 
-**Documentation** available at [gli-site](https://gli-tool.vercel.app/)
+Grab the right binary from the [latest release](https://github.com/Gazi2050/gli/releases) and follow the platform-specific steps above.
 
 <p align="center">Made with ❤️ for Git users</p>
