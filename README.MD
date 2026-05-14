@@ -153,6 +153,14 @@ Display your GitHub profile or any user's profile directly in the terminal.
 > - `gli me` — Show your GitHub profile
 > - `gli profile <username>` — Show any GitHub user profile
 
+### Status Overview
+
+Show current branch info, ahead/behind counts, file change summary, and last commit.
+
+> **Commands:**
+>
+> - `gli status` — Show branch status, remote, changes, and last commit
+
 ## Command Cheatsheet
 
 | Command                  | What it does                                                                                       |
@@ -160,6 +168,7 @@ Display your GitHub profile or any user's profile directly in the terminal.
 | `gli commit`             | Stage every change, generate an AI commit message, and push (use `--no-verify` to skip git hooks). |
 | `gli branch -c <name>`   | Create a new branch, switch to it, and push with upstream tracking in one step.                    |
 | `gli branch -s <name>`   | Switch to an existing branch using a concise flag.                                                 |
+| `gli status`             | Show current branch, remote, ahead/behind, file changes, and last commit.                          |
 | `gli me`                 | Show the GitHub profile detected from your local git config.                                       |
 | `gli profile <username>` | Display any GitHub user's profile directly in the terminal.                                        |
 

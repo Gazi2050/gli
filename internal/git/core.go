@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"strconv"
 	"strings"
 )
 
@@ -104,4 +105,76 @@ func (g *GitCore) GetRepoName() (string, error) {
 	}
 
 	return repoName, nil
+}
+
+type StatusData struct {
+	Branch     string
+	Remote     string
+	Ahead      int
+	Behind     int
+	Staged     int
+	Unstaged   int
+	Untracked  int
+	LastCommit string
+	LastDate   string
+}
+
+func (g *GitCore) GetStatusData() (*StatusData, error) {
+	branch, err := g.GetCurrentBranch()
+	if err != nil {
+		return nil, err
+	}
+
+	remote, _ := g.GetConfig("remote.origin.url")
+	remote = strings.TrimSuffix(remote, ".git")
+	if parts := strings.Split(remote, ":"); len(parts) == 2 {
+		remote = parts[1]
+	}
+	if parts := strings.Split(remote, "/"); len(parts) >= 2 {
+		remote = parts[len(parts)-2] + "/" + parts[len(parts)-1]
+	}
+
+	ahead, behind := 0, 0
+	if countStr, _, err := g.RunCommand("rev-list", "--left-right", "--count", "@{u}...HEAD"); err == nil {
+		parts := strings.Fields(countStr)
+		if len(parts) == 2 {
+			behind, _ = strconv.Atoi(parts[0])
+			ahead, _ = strconv.Atoi(parts[1])
+		}
+	}
+
+	staged, unstaged, untracked := 0, 0, 0
+	if porc, _, err := g.RunCommand("status", "--porcelain"); err == nil {
+		for _, line := range strings.Split(porc, "\n") {
+			if len(line) < 2 {
+				continue
+			}
+			x, y := line[0], line[1]
+			if x == '?' && y == '?' {
+				untracked++
+			} else {
+				if x != ' ' && x != '?' {
+					staged++
+				}
+				if y != ' ' && y != '?' {
+					unstaged++
+				}
+			}
+		}
+	}
+
+	lastCommit, _, _ := g.RunCommand("log", "-1", "--format=%s")
+	lastDate, _, _ := g.RunCommand("log", "-1", "--format=%cr")
+
+	return &StatusData{
+		Branch:     branch,
+		Remote:     remote,
+		Ahead:      ahead,
+		Behind:     behind,
+		Staged:     staged,
+		Unstaged:   unstaged,
+		Untracked:  untracked,
+		LastCommit: lastCommit,
+		LastDate:   lastDate,
+	}, nil
 }

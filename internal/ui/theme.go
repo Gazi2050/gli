@@ -31,6 +31,11 @@ type Theme struct {
 
 	Accent lipgloss.Color
 	Dim    lipgloss.Color
+
+	IconSuccess string
+	IconWarning string
+	IconError   string
+	IconBranch  string
 }
 
 var themes = map[string]*Theme{
@@ -54,6 +59,10 @@ var themes = map[string]*Theme{
 		BorderError:     lipgloss.Color("#F38BA8"),
 		Accent:          lipgloss.Color("#F5C2E7"),
 		Dim:             lipgloss.Color("#313244"),
+		IconSuccess:     "✔",
+		IconWarning:     "⚠",
+		IconError:       "✖",
+		IconBranch:      "⑂",
 	},
 	"night": {
 		Name:            "night",
@@ -75,6 +84,10 @@ var themes = map[string]*Theme{
 		BorderError:     lipgloss.Color("#F7768E"),
 		Accent:          lipgloss.Color("#FF9E64"),
 		Dim:             lipgloss.Color("#292E42"),
+		IconSuccess:     "✔",
+		IconWarning:     "⚠",
+		IconError:       "✖",
+		IconBranch:      "⑂",
 	},
 	"minimal": {
 		Name:            "minimal",
@@ -96,6 +109,10 @@ var themes = map[string]*Theme{
 		BorderError:     lipgloss.Color("1"),
 		Accent:          lipgloss.Color("6"),
 		Dim:             lipgloss.Color("0"),
+		IconSuccess:     "+",
+		IconWarning:     "!",
+		IconError:       "x",
+		IconBranch:      "*",
 	},
 }
 

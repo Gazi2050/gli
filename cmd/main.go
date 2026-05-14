@@ -48,6 +48,7 @@ func newRootCmd() (*cobra.Command, error) {
 	rootCmd.AddCommand(
 		newCommitCmd(deps),
 		newBranchCmd(deps),
+		newStatusCmd(deps),
 		newMeCmd(deps),
 		newProfileCmd(deps),
 		newVersionCmd(),
@@ -85,23 +86,34 @@ func newBranchCmd(d *deps) *cobra.Command {
 		Use:   "branch",
 		Short: "Create or switch branches",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			out := cmd.OutOrStdout()
 			if createName != "" {
-				return ui.WithSpinner(
+				err := ui.WithSpinner(
 					fmt.Sprintf("Creating branch %s...", createName),
 					func() error {
 						return d.actions.CreateBranch(createName)
 					},
 				)
+				if err != nil {
+					return err
+				}
+				fmt.Fprintln(out, ui.SuccessCard("Done", fmt.Sprintf("Branch %s created and pushed to remote.", createName)))
+				return nil
 			}
 			if switchName != "" {
-				return ui.WithSpinner(
+				err := ui.WithSpinner(
 					fmt.Sprintf("Switching to %s...", switchName),
 					func() error {
 						return d.actions.SwitchBranch(switchName)
 					},
 				)
+				if err != nil {
+					return err
+				}
+				fmt.Fprintln(out, ui.SuccessCard("Done", fmt.Sprintf("Switched to branch %s.", switchName)))
+				return nil
 			}
-			fmt.Fprintln(cmd.OutOrStdout(), ui.RenderHelp())
+			fmt.Fprintln(out, ui.RenderHelp())
 			return nil
 		},
 	}
@@ -110,6 +122,21 @@ func newBranchCmd(d *deps) *cobra.Command {
 	cmd.Flags().StringVarP(&switchName, "switch", "s", "", "Switch to existing branch")
 
 	return cmd
+}
+
+func newStatusCmd(d *deps) *cobra.Command {
+	return &cobra.Command{
+		Use:   "status",
+		Short: "Show current branch status",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			data, err := d.core.GetStatusData()
+			if err != nil {
+				return err
+			}
+			fmt.Fprintln(cmd.OutOrStdout(), ui.RenderStatus(data))
+			return nil
+		},
+	}
 }
 
 func newMeCmd(d *deps) *cobra.Command {

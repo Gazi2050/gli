@@ -89,19 +89,24 @@ func BoxInnerWidth() int {
 	return boxWidth() - 6
 }
 
-func RenderBox(variant BoxVariant, title string, content string) string {
+func borderColorForVariant(v BoxVariant) lipgloss.Color {
 	t := GetCurrentTheme()
+	switch v {
+	case BoxSuccess:
+		return t.BorderSuccess
+	case BoxWarning:
+		return t.BorderWarning
+	case BoxError:
+		return t.BorderError
+	default:
+		return t.BorderPrimary
+	}
+}
+
+func RenderBox(variant BoxVariant, title string, content string) string {
 	st := GetStyles()
 
-	border := t.BorderPrimary
-	switch variant {
-	case BoxSuccess:
-		border = t.BorderSuccess
-	case BoxWarning:
-		border = t.BorderWarning
-	case BoxError:
-		border = t.BorderError
-	}
+	border := borderColorForVariant(variant)
 
 	w := boxWidth()
 	box := lipgloss.NewStyle().
@@ -131,6 +136,130 @@ func MessageBox(variant BoxVariant, title, body string) string {
 		body = st.Text.Render(body)
 	}
 	return RenderBox(variant, title, body)
+}
+
+type CardOptions struct {
+	Variant   BoxVariant
+	Title     string
+	Content   string
+	FullWidth bool
+	MaxWidth  int
+}
+
+func RenderCard(opts CardOptions) string {
+	st := GetStyles()
+
+	border := borderColorForVariant(opts.Variant)
+	maxW := opts.MaxWidth
+	if maxW <= 0 {
+		maxW = 80
+	}
+
+	cardStyle := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(border).
+		Padding(0, 1)
+
+	if opts.FullWidth {
+		cardStyle = cardStyle.Width(boxWidth())
+	} else {
+		contentWidth := measureContentWidth(opts.Content, opts.Title)
+		w := minInt(maxW, maxInt(contentWidth+6, 30))
+		tw := TerminalWidth() - 4
+		if w > tw {
+			w = tw
+		}
+		cardStyle = cardStyle.Width(w)
+	}
+
+	content := opts.Content
+	if strings.TrimSpace(opts.Title) != "" {
+		content = st.Title.Render(opts.Title) + "\n" + content
+	}
+
+	return cardStyle.Render(content)
+}
+
+func SuccessCard(title, body string) string {
+	t := GetCurrentTheme()
+	st := GetStyles()
+	icon := st.Success.Render(t.IconSuccess)
+	fullTitle := icon + " " + st.Success.Render(title)
+	return RenderCard(CardOptions{
+		Variant: BoxSuccess,
+		Title:   fullTitle,
+		Content: st.Text.Render(body),
+	})
+}
+
+func ErrorCard(title, body string) string {
+	t := GetCurrentTheme()
+	st := GetStyles()
+	icon := st.Error.Render(t.IconError)
+	fullTitle := icon + " " + st.Error.Render(title)
+	return RenderCard(CardOptions{
+		Variant: BoxError,
+		Title:   fullTitle,
+		Content: st.Text.Render(body),
+	})
+}
+
+func WarningCard(title, body string) string {
+	t := GetCurrentTheme()
+	st := GetStyles()
+	icon := st.Warning.Render(t.IconWarning)
+	fullTitle := icon + " " + st.Warning.Render(title)
+	return RenderCard(CardOptions{
+		Variant: BoxWarning,
+		Title:   fullTitle,
+		Content: st.Text.Render(body),
+	})
+}
+
+func measureContentWidth(content string, title string) int {
+	maxW := 0
+	if title != "" {
+		for _, line := range strings.Split(runewidth.Truncate(title, 200, ""), "\n") {
+			w := runewidth.StringWidth(line)
+			if w > maxW {
+				maxW = w
+			}
+		}
+	}
+	for _, line := range strings.Split(content, "\n") {
+		w := runewidth.StringWidth(runewidth.Truncate(stripAnsi(line), 200, ""))
+		if w > maxW {
+			maxW = w
+		}
+	}
+	return maxW
+}
+
+func stripAnsi(s string) string {
+	var out strings.Builder
+	i := 0
+	for i < len(s) {
+		if s[i] == '\x1b' {
+			i++
+			if i < len(s) && s[i] == '[' {
+				i++
+				for i < len(s) {
+					if (s[i] >= '0' && s[i] <= '9') || s[i] == ';' || s[i] == '?' {
+						i++
+					} else if s[i] >= 'a' && s[i] <= 'z' || s[i] >= 'A' && s[i] <= 'Z' {
+						i++
+						break
+					} else {
+						break
+					}
+				}
+			}
+			continue
+		}
+		out.WriteByte(s[i])
+		i++
+	}
+	return out.String()
 }
 
 func RenderTitle(text string) string {

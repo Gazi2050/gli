@@ -9,9 +9,10 @@ import (
 
 func RenderProfile(user *api.User, repos []api.Repo) string {
 	st := GetStyles()
+	theme := GetCurrentTheme()
 
 	if user == nil {
-		return MessageBox(BoxWarning, "GitHub Profile", "No profile data available")
+		return WarningCard("GitHub Profile", "No profile data available")
 	}
 
 	name := valueOr(user.Name, "GitHub User")
@@ -19,44 +20,42 @@ func RenderProfile(user *api.User, repos []api.Repo) string {
 	bio := valueOr(user.Bio, "No bio available.")
 
 	header := st.Text.Bold(true).Render(name) + " " + st.Muted.Render("(@"+login+")")
-	bioLine := st.Text.Render(wrapParagraphs(bio, boxWidth()-6))
 
 	stats := strings.Join([]string{
-		st.Accent.Render("Public Repos:") + " " + fmt.Sprintf("%d", user.PublicRepos),
-		st.Accent.Render("Followers:") + " " + fmt.Sprintf("%d", user.Followers),
-		st.Accent.Render("Following:") + " " + fmt.Sprintf("%d", user.Following),
+		st.Accent.Render(fmt.Sprintf("%d repos", user.PublicRepos)),
+		st.Text.Render(fmt.Sprintf("%d followers", user.Followers)),
+		st.Text.Render(fmt.Sprintf("%d following", user.Following)),
 	}, "  •  ")
 
-	metaLines := []string{}
+	meta := []string{}
 	if strings.TrimSpace(user.Location) != "" {
-		metaLines = append(metaLines, st.Muted.Render("Location:")+" "+st.Text.Render(user.Location))
+		meta = append(meta, st.Muted.Render("Location:")+" "+st.Text.Render(user.Location))
 	}
 	if strings.TrimSpace(user.TwitterUsername) != "" {
-		metaLines = append(metaLines, st.Muted.Render("Twitter:")+" "+st.Text.Render("@"+user.TwitterUsername))
+		meta = append(meta, st.Muted.Render("Twitter:")+" "+st.Text.Render("@"+user.TwitterUsername))
 	}
 	if strings.TrimSpace(user.Blog) != "" {
-		metaLines = append(metaLines, st.Muted.Render("Site:")+" "+st.Text.Render(user.Blog))
+		meta = append(meta, st.Muted.Render("Site:")+" "+st.Text.Render(user.Blog))
 	}
 	joined := user.CreatedAt
 	if len(joined) >= 10 {
 		joined = joined[:10]
 	}
 	if strings.TrimSpace(joined) != "" {
-		metaLines = append(metaLines, st.Muted.Render("Joined:")+" "+st.Text.Render(joined))
+		meta = append(meta, st.Muted.Render("Joined:")+" "+st.Text.Render(joined))
 	}
 
-	sections := []string{
-		header,
-		bioLine,
-		"",
-		st.Text.Render(stats),
+	sections := []string{header, bio, stats}
+	if len(meta) > 0 {
+		sections = append(sections, strings.Join(meta, "  •  "))
 	}
+	content := strings.Join(sections, "\n")
 
-	if len(metaLines) > 0 {
-		sections = append(sections, "", strings.Join(metaLines, "\n"))
-	}
-
-	return RenderBox(BoxPrimary, "GitHub Profile", strings.Join(sections, "\n"))
+	return RenderCard(CardOptions{
+		Variant: BoxPrimary,
+		Title:   st.Title.Render(theme.IconSuccess) + " " + st.Title.Render("GitHub Profile"),
+		Content: content,
+	})
 }
 
 func valueOr(value, fallback string) string {
