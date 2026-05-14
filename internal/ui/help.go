@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/mattn/go-runewidth"
 )
 
 const asciiLogo = `
@@ -24,11 +25,11 @@ type helpRow struct {
 }
 
 var helpRows = []helpRow{
-	{Command: "AI Commit", Flag: "gli commit", Desc: "Stage all, generate AI message, commit & push"},
-	{Command: "Create Branch", Flag: "gli branch -c <name>", Desc: "Create branch + push to remote"},
-	{Command: "Switch Branch", Flag: "gli branch -s <name>", Desc: "Switch to existing branch"},
-	{Command: "My Profile", Flag: "gli me", Desc: "Show your GitHub profile"},
-	{Command: "User Profile", Flag: "gli profile <user>", Desc: "Show any GitHub profile"},
+	{Command: "AI Commit", Flag: "gli commit", Desc: "AI commit & push"},
+	{Command: "Create Branch", Flag: "gli branch -c <name>", Desc: "Create & push branch"},
+	{Command: "Switch Branch", Flag: "gli branch -s <name>", Desc: "Switch branch"},
+	{Command: "My Profile", Flag: "gli me", Desc: "Show your profile"},
+	{Command: "User Profile", Flag: "gli profile <user>", Desc: "Show any profile"},
 }
 
 func RenderHelp() string {
@@ -44,16 +45,23 @@ func RenderHelp() string {
 	borderStyle := st.Muted
 	headerStyle := lipgloss.NewStyle().Bold(true).Foreground(t.Text)
 
-	tl, tr, bl, br, h, v, tsep, bsep, l, r, c := roundedBorderRunes()
+	tw := BoxWidthForTerminalWidth(TerminalWidth())
+	colW := computeColWidths(tw)
 
-	colW := []int{18, 26, 42}
 	padCol := func(s string, w int) string {
+		if runewidth.StringWidth(s) > w {
+			return runewidth.Truncate(s, w, "…")
+		}
 		return fmt.Sprintf("%-*s", w, s)
 	}
 
-	top := borderStyle.Render(tl) + borderStyle.Render(strings.Repeat(h, colW[0])) +
-		borderStyle.Render(tsep) + borderStyle.Render(strings.Repeat(h, colW[1])) +
-		borderStyle.Render(tsep) + borderStyle.Render(strings.Repeat(h, colW[2])) +
+	tl, tr, bl, br, h, v, tsep, bsep, l, r, c := roundedBorderRunes()
+
+	cw := func(i int) int { return colW[i] + 2 }
+
+	top := borderStyle.Render(tl) + borderStyle.Render(strings.Repeat(h, cw(0))) +
+		borderStyle.Render(tsep) + borderStyle.Render(strings.Repeat(h, cw(1))) +
+		borderStyle.Render(tsep) + borderStyle.Render(strings.Repeat(h, cw(2))) +
 		borderStyle.Render(tr)
 
 	header := borderStyle.Render(v) +
@@ -61,9 +69,9 @@ func RenderHelp() string {
 		headerStyle.Render(" "+padCol("Usage", colW[1])+" ") + borderStyle.Render(v) +
 		headerStyle.Render(" "+padCol("Description", colW[2])+" ") + borderStyle.Render(v)
 
-	sep := borderStyle.Render(l) + borderStyle.Render(strings.Repeat(h, colW[0])) +
-		borderStyle.Render(c) + borderStyle.Render(strings.Repeat(h, colW[1])) +
-		borderStyle.Render(c) + borderStyle.Render(strings.Repeat(h, colW[2])) +
+	sep := borderStyle.Render(l) + borderStyle.Render(strings.Repeat(h, cw(0))) +
+		borderStyle.Render(c) + borderStyle.Render(strings.Repeat(h, cw(1))) +
+		borderStyle.Render(c) + borderStyle.Render(strings.Repeat(h, cw(2))) +
 		borderStyle.Render(r)
 
 	rows := []string{}
@@ -78,9 +86,9 @@ func RenderHelp() string {
 		rows = append(rows, line)
 	}
 
-	bottom := borderStyle.Render(bl) + borderStyle.Render(strings.Repeat(h, colW[0])) +
-		borderStyle.Render(bsep) + borderStyle.Render(strings.Repeat(h, colW[1])) +
-		borderStyle.Render(bsep) + borderStyle.Render(strings.Repeat(h, colW[2])) +
+	bottom := borderStyle.Render(bl) + borderStyle.Render(strings.Repeat(h, cw(0))) +
+		borderStyle.Render(bsep) + borderStyle.Render(strings.Repeat(h, cw(1))) +
+		borderStyle.Render(bsep) + borderStyle.Render(strings.Repeat(h, cw(2))) +
 		borderStyle.Render(br)
 
 	table := strings.Join(append([]string{top, header, sep}, append(rows, bottom)...), "\n")
@@ -93,4 +101,27 @@ func RenderHelp() string {
 		table,
 		usage,
 	}, "\n\n")
+}
+
+func computeColWidths(boxW int) []int {
+	overhead := 4 + 6
+	avail := boxW - overhead
+	if avail < 30 {
+		avail = 30
+	}
+
+	cmdW := 18
+	flagW := 26
+	descW := 42
+
+	total := cmdW + flagW + descW
+	if total <= avail {
+		return []int{cmdW, flagW, descW}
+	}
+
+	descW = maxInt(20, avail-18-26)
+	flagW = maxInt(14, avail-18-descW)
+	cmdW = maxInt(14, avail-flagW-descW)
+
+	return []int{cmdW, flagW, descW}
 }
