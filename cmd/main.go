@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
@@ -18,7 +19,7 @@ var version = "dev-local"
 func main() {
 	rootCmd, err := newRootCmd()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to initialize:", err)
+		fmt.Fprintln(os.Stderr, ui.ErrorCard("Initialization Error", err.Error()))
 		os.Exit(1)
 	}
 
@@ -49,6 +50,8 @@ func newRootCmd() (*cobra.Command, error) {
 		newCommitCmd(deps),
 		newBranchCmd(deps),
 		newStatusCmd(deps),
+		newLogCmd(deps),
+		newReflogCmd(deps),
 		newMeCmd(deps),
 		newProfileCmd(deps),
 		newVersionCmd(),
@@ -66,10 +69,12 @@ func newCommitCmd(d *deps) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			model, err := d.commitCtrl.RunAICommit(noVerify)
 			if err != nil {
-				return err
+				return fmt.Errorf("%s", ui.ErrorCard("Commit Error", friendlyGitError(err)))
 			}
-			_, err = tea.NewProgram(model).Run()
-			return err
+			if _, err = tea.NewProgram(model).Run(); err != nil {
+				return fmt.Errorf("%s", ui.ErrorCard("Commit Error", friendlyError(err)))
+			}
+			return nil
 		},
 	}
 
@@ -84,7 +89,7 @@ func newBranchCmd(d *deps) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "branch",
-		Short: "Create or switch branches",
+		Short: "List, create, or switch branches",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			out := cmd.OutOrStdout()
 			if createName != "" {
@@ -95,7 +100,7 @@ func newBranchCmd(d *deps) *cobra.Command {
 					},
 				)
 				if err != nil {
-					return err
+					return fmt.Errorf("%s", ui.ErrorCard("Branch Error", friendlyGitError(err)))
 				}
 				fmt.Fprintln(out, ui.SuccessCard("Done", fmt.Sprintf("Branch %s created and pushed to remote.", createName)))
 				return nil
@@ -108,12 +113,19 @@ func newBranchCmd(d *deps) *cobra.Command {
 					},
 				)
 				if err != nil {
-					return err
+					return fmt.Errorf("%s", ui.ErrorCard("Branch Error", friendlyGitError(err)))
 				}
 				fmt.Fprintln(out, ui.SuccessCard("Done", fmt.Sprintf("Switched to branch %s.", switchName)))
 				return nil
 			}
-			fmt.Fprintln(out, ui.RenderHelp())
+			branches, err := d.core.GetBranches()
+			if err != nil {
+				return fmt.Errorf("%s", ui.ErrorCard("Branch Error", friendlyGitError(err)))
+			}
+			output := ui.RenderBranches(branches)
+			if output != "" {
+				fmt.Fprintln(out, output)
+			}
 			return nil
 		},
 	}
@@ -131,12 +143,60 @@ func newStatusCmd(d *deps) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			data, err := d.core.GetStatusData()
 			if err != nil {
-				return err
+				return fmt.Errorf("%s", ui.ErrorCard("Status Error", "Not a git repository. Run this inside a git project."))
 			}
 			fmt.Fprintln(cmd.OutOrStdout(), ui.RenderStatus(data))
 			return nil
 		},
 	}
+}
+
+func newLogCmd(d *deps) *cobra.Command {
+	var limit int
+
+	cmd := &cobra.Command{
+		Use:   "log",
+		Short: "Show commit history",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			entries, err := d.core.GetLogData(limit)
+			if err != nil {
+				return fmt.Errorf("%s", ui.ErrorCard("Log Error", friendlyGitError(err)))
+			}
+			output := ui.RenderLog(entries, "gli log", "Commit")
+			if output != "" {
+				fmt.Fprintln(cmd.OutOrStdout(), output)
+			}
+			return nil
+		},
+	}
+
+	cmd.Flags().IntVarP(&limit, "limit", "n", 50, "Number of commits to show")
+
+	return cmd
+}
+
+func newReflogCmd(d *deps) *cobra.Command {
+	var limit int
+
+	cmd := &cobra.Command{
+		Use:   "reflog",
+		Short: "Show reference log",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			entries, err := d.core.GetReflogData(limit)
+			if err != nil {
+				return fmt.Errorf("%s", ui.ErrorCard("Reflog Error", friendlyGitError(err)))
+			}
+			output := ui.RenderLog(entries, "gli reflog", "Action")
+			if output != "" {
+				fmt.Fprintln(cmd.OutOrStdout(), output)
+			}
+			return nil
+		},
+	}
+
+	cmd.Flags().IntVarP(&limit, "limit", "n", 50, "Number of entries to show")
+
+	return cmd
 }
 
 func newMeCmd(d *deps) *cobra.Command {
@@ -146,7 +206,7 @@ func newMeCmd(d *deps) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			profile, err := d.profileCtrl.ShowProfile("")
 			if err != nil {
-				return err
+				return fmt.Errorf("%s", ui.ErrorCard("Profile Error", friendlyProfileError(err)))
 			}
 			fmt.Fprintln(cmd.OutOrStdout(), profile)
 			return nil
@@ -158,11 +218,23 @@ func newProfileCmd(d *deps) *cobra.Command {
 	return &cobra.Command{
 		Use:   "profile <username>",
 		Short: "Show a GitHub user's profile",
-		Args:  cobra.ExactArgs(1),
+		Args: func(cmd *cobra.Command, args []string) error {
+			if len(args) < 1 {
+				return fmt.Errorf("%s", ui.ErrorCard("Missing Username", "Usage: gli profile <username>\nExample: gli profile torvalds"))
+			}
+			if len(args) > 1 {
+				return fmt.Errorf("%s", ui.ErrorCard("Too Many Arguments", "Usage: gli profile <username>\nExample: gli profile torvalds"))
+			}
+			return nil
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			profile, err := d.profileCtrl.ShowProfile(args[0])
+			username := strings.TrimSpace(args[0])
+			if username == "" {
+				return fmt.Errorf("%s", ui.ErrorCard("Invalid Username", "Username cannot be empty."))
+			}
+			profile, err := d.profileCtrl.ShowProfile(username)
 			if err != nil {
-				return err
+				return fmt.Errorf("%s", ui.ErrorCard("Profile Error", friendlyProfileError(err)))
 			}
 			fmt.Fprintln(cmd.OutOrStdout(), profile)
 			return nil
@@ -253,4 +325,50 @@ func (g *gitManagerAdapter) CommitAndPush(message string, noVerify bool) error {
 
 func (g *gitManagerAdapter) HasUpstream() (bool, error) {
 	return g.actions.HasUpstream()
+}
+
+func friendlyGitError(err error) string {
+	msg := strings.ToLower(err.Error())
+	switch {
+	case strings.Contains(msg, "not a git repository"):
+		return "Not a git repository. Run this inside a git project."
+	case strings.Contains(msg, "no staged diff") || strings.Contains(msg, "no staged changes"):
+		return "No changes to commit. Make some changes first."
+	case strings.Contains(msg, "already exists") || strings.Contains(msg, "already exists and"):
+		return "This branch already exists."
+	case strings.Contains(msg, "did not match") || strings.Contains(msg, "not found"):
+		return "Branch not found. Check the name and try again."
+	case strings.Contains(msg, "network") || strings.Contains(msg, "timeout") || strings.Contains(msg, "connection refused"):
+		return "Network error. Check your internet connection."
+	case strings.Contains(msg, "permission denied"):
+		return "Permission denied. Check your access rights."
+	case strings.Contains(msg, "push") && strings.Contains(msg, "failed"):
+		return "Push failed. Check your remote and permissions."
+	default:
+		return err.Error()
+	}
+}
+
+func friendlyProfileError(err error) string {
+	msg := strings.ToLower(err.Error())
+	switch {
+	case strings.Contains(msg, "status 404"):
+		return "User not found on GitHub."
+	case strings.Contains(msg, "status 403"):
+		return "GitHub API rate limit exceeded. Try again later."
+	case strings.Contains(msg, "network") || strings.Contains(msg, "timeout") || strings.Contains(msg, "connection refused"):
+		return "Network error. Check your internet connection."
+	case strings.Contains(msg, "username could not be detected"):
+		return "Could not detect your GitHub username. Set it with:\n  git config --global github.user <username>"
+	default:
+		return err.Error()
+	}
+}
+
+func friendlyError(err error) string {
+	msg := err.Error()
+	if strings.Contains(strings.ToLower(msg), "failed to initialize") {
+		return "Something went wrong. Please try again."
+	}
+	return msg
 }

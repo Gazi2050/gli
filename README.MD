@@ -135,14 +135,41 @@ Stages all changes, generates an AI commit message, and pushes through a single 
 > - `gli commit` — Stage changes, generate AI commit message, and push
 > - `gli commit --no-verify` — Skip git hooks
 
-### Branch Management
+### Status Overview
 
-Quickly create branches with upstream tracking or switch branches using concise flags.
+Show current branch info, ahead/behind counts, file change summary, and last commit.
 
 > **Commands:**
 >
+> - `gli status` — Show branch status, remote, changes, and last commit
+
+### Branch Management
+
+List local branches, create new ones with upstream tracking, or switch branches using concise flags.
+
+> **Commands:**
+>
+> - `gli branch` — List all local branches
 > - `gli branch -c <name>` — Create branch and push with upstream
 > - `gli branch -s <name>` — Switch to existing branch
+
+### Commit History
+
+Browse commit history with interactive pagination. Navigate with j/k, page up/down, or g/G.
+
+> **Commands:**
+>
+> - `gli log` — Show commit history (Hash, Author, Commit, Date)
+> - `gli log -n 10` — Show last 10 commits
+
+### Reference Log
+
+View the git reflog with the same interactive table. Track checkouts, resets, rebases, and commits.
+
+> **Commands:**
+>
+> - `gli reflog` — Show reference log (Hash, Author, Action, Date)
+> - `gli reflog -n 10` — Show last 10 reflog entries
 
 ### Profile Lookup
 
@@ -153,22 +180,17 @@ Display your GitHub profile or any user's profile directly in the terminal.
 > - `gli me` — Show your GitHub profile
 > - `gli profile <username>` — Show any GitHub user profile
 
-### Status Overview
-
-Show current branch info, ahead/behind counts, file change summary, and last commit.
-
-> **Commands:**
->
-> - `gli status` — Show branch status, remote, changes, and last commit
-
 ## Command Cheatsheet
 
 | Command                  | What it does                                                                                       |
 | ------------------------ | -------------------------------------------------------------------------------------------------- |
 | `gli commit`             | Stage every change, generate an AI commit message, and push (use `--no-verify` to skip git hooks). |
+| `gli status`             | Show current branch, remote, ahead/behind, file changes (modified, new, deleted).                  |
+| `gli branch`             | List all local branches with full names.                                                           |
 | `gli branch -c <name>`   | Create a new branch, switch to it, and push with upstream tracking in one step.                    |
 | `gli branch -s <name>`   | Switch to an existing branch using a concise flag.                                                 |
-| `gli status`             | Show current branch, remote, ahead/behind, file changes, and last commit.                          |
+| `gli log`                | Browse commit history with interactive pagination (Hash, Author, Commit, Date).                    |
+| `gli reflog`             | View reference log with interactive pagination (Hash, Author, Action, Date).                       |
 | `gli me`                 | Show the GitHub profile detected from your local git config.                                       |
 | `gli profile <username>` | Display any GitHub user's profile directly in the terminal.                                        |
 

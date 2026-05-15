@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/Gazi2050/gli/internal/api"
 )
@@ -17,39 +18,47 @@ func RenderProfile(user *api.User, repos []api.Repo) string {
 
 	name := valueOr(user.Name, "GitHub User")
 	login := valueOr(user.Login, "N/A")
-	bio := valueOr(user.Bio, "No bio available.")
+	bio := valueOr(user.Bio, "")
 
-	header := st.Text.Bold(true).Render(name) + " " + st.Muted.Render("(@"+login+")")
+	var lines []string
 
-	stats := strings.Join([]string{
-		st.Accent.Render(fmt.Sprintf("%d repos", user.PublicRepos)),
-		st.Text.Render(fmt.Sprintf("%d followers", user.Followers)),
-		st.Text.Render(fmt.Sprintf("%d following", user.Following)),
-	}, "  •  ")
+	lines = append(lines, st.Text.Bold(true).Render(name))
+	lines = append(lines, st.Muted.Render("@"+login))
 
-	meta := []string{}
+	if bio != "" {
+		lines = append(lines, bio)
+	}
+
+	lines = append(lines, "")
+
+	label := func(s string) string { return st.Muted.Render("◈ "+s+":") }
+
+	lines = append(lines, label("repos")+" "+st.Accent.Render(fmt.Sprint(user.PublicRepos)))
+	lines = append(lines, label("followers")+" "+st.Text.Render(fmt.Sprint(user.Followers)))
+	lines = append(lines, label("following")+" "+st.Text.Render(fmt.Sprint(user.Following)))
+
 	if strings.TrimSpace(user.Location) != "" {
-		meta = append(meta, st.Muted.Render("Location:")+" "+st.Text.Render(user.Location))
+		lines = append(lines, label("location")+" "+st.Text.Render(user.Location))
 	}
 	if strings.TrimSpace(user.TwitterUsername) != "" {
-		meta = append(meta, st.Muted.Render("Twitter:")+" "+st.Text.Render("@"+user.TwitterUsername))
+		lines = append(lines, label("twitter")+" "+st.Text.Render("@"+user.TwitterUsername))
 	}
 	if strings.TrimSpace(user.Blog) != "" {
-		meta = append(meta, st.Muted.Render("Site:")+" "+st.Text.Render(user.Blog))
+		lines = append(lines, label("site")+" "+st.Text.Render(user.Blog))
 	}
+
 	joined := user.CreatedAt
 	if len(joined) >= 10 {
 		joined = joined[:10]
 	}
+	if t, err := time.Parse("2006-01-02", joined); err == nil {
+		joined = t.Format("Jan 2, 2006")
+	}
 	if strings.TrimSpace(joined) != "" {
-		meta = append(meta, st.Muted.Render("Joined:")+" "+st.Text.Render(joined))
+		lines = append(lines, label("joined")+" "+st.Text.Render(joined))
 	}
 
-	sections := []string{header, bio, stats}
-	if len(meta) > 0 {
-		sections = append(sections, strings.Join(meta, "  •  "))
-	}
-	content := strings.Join(sections, "\n")
+	content := strings.Join(lines, "\n")
 
 	return RenderCard(CardOptions{
 		Variant: BoxPrimary,

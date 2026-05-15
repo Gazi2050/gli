@@ -26,8 +26,11 @@ type helpRow struct {
 var helpRows = []helpRow{
 	{Command: "AI Commit", Flag: "gli commit", Desc: "AI commit & push"},
 	{Command: "Status", Flag: "gli status", Desc: "Show branch status"},
+	{Command: "Branch", Flag: "gli branch", Desc: "List local branches"},
 	{Command: "Create Branch", Flag: "gli branch -c <name>", Desc: "Create & push branch"},
 	{Command: "Switch Branch", Flag: "gli branch -s <name>", Desc: "Switch branch"},
+	{Command: "Log", Flag: "gli log", Desc: "Show commit history"},
+	{Command: "Reflog", Flag: "gli reflog", Desc: "Show reference log"},
 	{Command: "My Profile", Flag: "gli me", Desc: "Show your profile"},
 	{Command: "User Profile", Flag: "gli profile <user>", Desc: "Show any profile"},
 }

@@ -34,3 +34,5 @@ Thumbs.db
 # Project Specific
 .env
 *.spec
+
+gli
